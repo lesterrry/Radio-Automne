@@ -402,6 +402,11 @@
                                     <action selector="helpClicked:" target="XfG-lQ-9wD" id="D4P-eu-5Td"/>
                                 </connections>
                             </button>
+                            <imageView hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Fqq-Db-J6M" userLabel="Man">
+                                <rect key="frame" x="0.0" y="0.0" width="934" height="410"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="Manual" id="v4K-OU-ulq"/>
+                            </imageView>
                         </subviews>
                         <constraints>
                             <constraint firstItem="R31-XN-wg3" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="170" id="06X-nn-pwG"/>
@@ -492,6 +497,7 @@
                         <outlet property="frequencyControllerLight_tune" destination="PYq-Aq-Wpl" id="1Je-uf-WVp"/>
                         <outlet property="glitchStripe" destination="R31-XN-wg3" id="4mI-EJ-Mcn"/>
                         <outlet property="mainLabel" destination="Zjg-Xw-G1T" id="Iw2-9K-S7t"/>
+                        <outlet property="manual" destination="Fqq-Db-J6M" id="PD1-1D-ac3"/>
                         <outlet property="playbackControllerLight_error" destination="LLb-WQ-0Vn" id="SG8-Gk-Kj9"/>
                         <outlet property="playbackControllerLight_loading" destination="tJe-uM-7BO" id="sMB-MG-gmU"/>
                         <outlet property="playbackControllerLight_pause" destination="zhb-n7-Obz" id="cHL-VI-GTV"/>
@@ -513,6 +519,7 @@
         <image name="Box" width="2064.5" height="900"/>
         <image name="FreqContLight_new" width="137" height="66.5"/>
         <image name="FreqContLight_tuned" width="195.5" height="152.5"/>
+        <image name="Manual" width="2064.5" height="900"/>
         <image name="OnStandby_off" width="278.5" height="159"/>
         <image name="PlaybackContLight_error" width="143.5" height="105"/>
         <image name="PlaybackContLight_loading" width="169" height="91"/>

@@ -18,10 +18,10 @@ public class AutomneProperties{
     }
     
     public struct Frequency: Codable {
-        let name : String?
-        let num : Double?
-        let isNew : Bool?
-        let playlistID : String?
+        let name: String?
+        let num: Double?
+        let isNew: Bool?
+        let playlistID: String?
         
         enum CodingKeys: String, CodingKey {
             case name = "name"

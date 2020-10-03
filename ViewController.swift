@@ -37,6 +37,7 @@ class ViewController: NSViewController {
         }
     }
     @IBOutlet weak var terminal: NSTextField!
+    @IBOutlet weak var manual: NSImageView!
     @IBOutlet weak var frequencyControllerLight_tune: NSImageView!
     @IBOutlet weak var frequencyControllerLight_new: NSImageView!
     @IBOutlet weak var glitchStripe: NSImageView!
@@ -49,7 +50,6 @@ class ViewController: NSViewController {
     //*********************************************************************
     //ACTIONS
     //*********************************************************************
-    
     ///Frequency Controller
     @IBAction func freqControlUpClicked(_ sender: Any) {
         if ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
@@ -73,6 +73,7 @@ class ViewController: NSViewController {
         if ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
             SFX.playSFX(sfx: SFX.Effects.buttonClick)
             ViewController.player.pause()
+            ViewController.playlistArtworkServed = false
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 self.retrieveTracks(frequency: ViewController.selectedFrequency!)
             }
@@ -104,18 +105,31 @@ class ViewController: NSViewController {
         }
     }
     @IBAction func setupClicked(_ sender: Any) {
-        //TODO
         if ViewController.systemStatus != .busy{
             SFX.playSFX(sfx: SFX.Effects.buttonClick)
+            if ViewController.systemStatus != .error && ViewController.systemStatus != .standby{
+                let els = [SetupMenu.SetupMenuElement(
+                    title: "Display artwork",
+                    value: ViewController.defaults.integer(forKey: "artwork"),
+                    bounds: (1,3),
+                    isAction: false),
+                           SetupMenu.SetupMenuElement(
+                            title: "SAVE",
+                            value: 0,
+                            bounds: (0,1),
+                            isAction: true)]
+                ViewController.smenu = SetupMenu.get(for: els)
+                tclear()
+                tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
+                ViewController.inMenu = true
+            }
         }
-        tprint("Nothing to setup yet")
     }
     @IBAction func helpClicked(_ sender: Any) {
-        //TODO
         if ViewController.systemStatus != .busy{
             SFX.playSFX(sfx: SFX.Effects.buttonClick)
         }
-        tprint("Nothing to help with yet")
+        manual.isHidden = false;
     }
     @IBAction func nextClicked(_ sender: Any) {
         if ViewController.systemStatus != .busy{
@@ -156,7 +170,10 @@ class ViewController: NSViewController {
     //VARS
     //*********************************************************************
     static var player : AVPlayer = AVPlayer()
+    static var smenu = SetupMenu(elements: [], selected: 0)
     static var playableQueue: [Tracks] = []
+    static var playlistArtwork = ""
+    static var playlistArtworkServed = false
     static var playbackIndex = 0
     static var selectedFrequency: AutomneProperties.Frequency? = nil
     static var selectedFrequencyIndex = -1
@@ -173,7 +190,9 @@ class ViewController: NSViewController {
     static var firstCall = true
     static var mainDisplayState = MainDisplayState.song
     static let states = [MainDisplayState.volume, MainDisplayState.frequency, MainDisplayState.song, MainDisplayState.artist, MainDisplayState.time]
+    static var inMenu = false
     static var description: String = ""
+    static let defaults = UserDefaults.standard
     let fetchLogo = "### ### ### ### # #\n#   #    #  #   # #\n##  ###  #  #   ###\n#   #    #  #   # #\n#   ###  #  ### # #"
     
     //*********************************************************************
@@ -209,6 +228,41 @@ class ViewController: NSViewController {
     }
     
     ///System
+    override func keyDown(with event: NSEvent) {
+        hideImage()
+        manual.isHidden = true
+        if ViewController.inMenu{
+            tclear()
+            if event.keyCode == 0x7E //DOWN
+            {
+                ViewController.smenu = ViewController.smenu.downSel()
+                tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
+            }
+            else if event.keyCode == 0x7D //UP
+            {
+                ViewController.smenu = ViewController.smenu.upSel()
+                tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
+            }
+            else if event.keyCode == 0x7C //RIGHT
+            {
+                ViewController.smenu = ViewController.smenu.increment(saveDefaults)
+                tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
+            }
+            else if event.keyCode == 0x7B //LEFT
+            {
+                ViewController.smenu = ViewController.smenu.decrement()
+                tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
+            }
+        }
+    }
+    func saveDefaults(){
+        ViewController.defaults.set(ViewController.smenu.elements[0].value, forKey: "artwork")
+        ViewController.inMenu = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+            self.tclear()
+            self.tprint("Configuration saved")
+        }
+    }
     func powerOn(){
         standbyButton.image = NSImage(named: "OnStandby_on")
         setSystemStatus(to: AutomneProperties.SystemStatus.busy)
@@ -224,7 +278,6 @@ class ViewController: NSViewController {
             self.tprint("Loading mainframe...")
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            self.setFreqLabel(to: "Booting...")
             self.tprint("SUCCESS")
             self.tprint("Making leaves yellow...")
         }
@@ -240,7 +293,7 @@ class ViewController: NSViewController {
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 8.35) {
             self.tclear()
-            self.tprint(self.fetchLogo, raw: true)
+            self.tprint(self.fetchLogo, raw: true, noBreak: true)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 12) {
             self.retrieveFrequencies(initial: true)
@@ -259,7 +312,6 @@ class ViewController: NSViewController {
         }
         ViewController.pauseLightBlinkTimer?.invalidate()
         terminal.stringValue = ""
-        
     }
     
     @objc func longTick(){
@@ -287,12 +339,12 @@ class ViewController: NSViewController {
             let sec = Int(ViewController.player.currentTime().seconds)
             let dur = (ViewController.playableQueue[ViewController.playbackIndex].duration ?? 600000) / 1000
             let val = dur - sec
-            self.mainLabel.stringValue = "   -" + String(val / 60) + ":" + String(val % 60)
+            let pSec = val % 60
+            self.mainLabel.stringValue = "   -" + String(val / 60) + ":" + (pSec < 10 ? ("0" + String(pSec)) : String(pSec))
         }
     }
     func setSystemStatus(to: AutomneProperties.SystemStatus){
         ViewController.systemStatus = to
-        
         switch to {
         case .playing, .ready, .paused:
             statusLight.image = NSImage.init(named: "StatusLight_ready")
@@ -380,7 +432,7 @@ class ViewController: NSViewController {
             play(from: ViewController.playbackIndex + 1)
         } else {
             ViewController.playableQueue.shuffle()
-            tprint("Stream was reordered (1)")
+            tprint("Stream was mixed (1)")
             play(from: 0)
         }
     }
@@ -390,7 +442,7 @@ class ViewController: NSViewController {
             play(from: ViewController.playbackIndex - 1)
         } else {
             ViewController.playableQueue.shuffle()
-            tprint("Stream was reordered (2)")
+            tprint("Stream was mixed (2)")
             play(from: 0)
         }
         
@@ -400,7 +452,7 @@ class ViewController: NSViewController {
         tprint("", raw: true)
         tprint("", raw: true)
         tprint(" ***", raw: true)
-        tprint(ViewController.description)
+        tprint(ViewController.description, raw: true)
         tprint(" ***", raw: true)
         setPlaybackControllerState(to: .loading)
         //let url = URL.init(string: "https://api.fetchdev.host/m.mp3")
@@ -427,10 +479,21 @@ class ViewController: NSViewController {
                 self.setSystemStatus(to: .playing)
                 self.setPlaybackControllerState(to: .playing)
             }
-            if ViewController.playableQueue[ViewController.playbackIndex].artwork_url != nil{
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                    self.invokeImage(from: URL(string: ViewController.playableQueue[ViewController.playbackIndex].artwork_url!)!)
+            switch ViewController.defaults.integer(forKey: "artwork") {
+            case 2:
+                if ViewController.playableQueue[ViewController.playbackIndex].artwork_url != nil{
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                        self.invokeImage(from: URL(string: ViewController.playableQueue[ViewController.playbackIndex].artwork_url!)!)
+                    }
                 }
+            case 3:
+                if ViewController.playlistArtwork != "" && !ViewController.playlistArtworkServed{
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                        self.invokeImage(from: URL(string: ViewController.playlistArtwork)!)
+                        ViewController.playlistArtworkServed = true
+                    }
+                }
+            default: ()
             }
         }
     }
@@ -521,12 +584,22 @@ class ViewController: NSViewController {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                         self.fillQueue(with: obj.tracks!)
                         ViewController.description = obj.description ?? "No description"
+                        ViewController.playlistArtwork = obj.artwork_url ?? ""
                         self.setSystemStatus(to: AutomneProperties.SystemStatus.ready)
                         self.setPlaybackLabel(to: "Ready")
                         SFX.shutUp()
                         self.setFreqLight(to: .tuned, new: frequency.isNew!)
                         ViewController.setFrequencyIndex = ViewController.selectedFrequencyIndex
                         self.tprint("SUCCESS")
+                        self.tprint("***", raw: true)
+                        self.tprint("Player is ready", raw: true)
+                        self.tprint("***", raw: true)
+                        if ViewController.defaults.integer(forKey: "artwork") == 0{
+                            self.tprint("Power is applied for the first time, it's recommended to press 'HELP'.", raw: true)
+                            self.tprint("Check 'automne.fetchdev.host' for further info", raw: true)
+                            self.tprint("***", raw: true)
+                            ViewController.defaults.set(2, forKey: "artwork")
+                        }
                     }
                 }
                 catch{
@@ -619,7 +692,7 @@ class ViewController: NSViewController {
         hideImage()
         terminal.stringValue = ""
     }
-    func tprint(_ item: String, raw: Bool = false){
+    func tprint(_ item: String, raw: Bool = false, noBreak: Bool = false){
         hideImage()
         let o = terminal.stringValue.components(separatedBy: .newlines)
         if o.count > 10{
@@ -630,7 +703,7 @@ class ViewController: NSViewController {
             n.append(o[o.count - 1])
             terminal.stringValue = n
         }
-        if item.count > 24 && !raw{
+        if item.count > 24 && !noBreak{
             var s = item
             s.insert(contentsOf: raw ? "-\n" : "-\n  ", at: s.index(s.startIndex, offsetBy: 24))
             terminal.stringValue = terminal.stringValue + (raw ? "" : "> ") + s + "\n"
@@ -647,17 +720,18 @@ class ViewController: NSViewController {
         }
         else{
             ViewController.terminalImageTimer = Timer.scheduledTimer(
-            timeInterval: 4.5,
-            target: self,
-            selector: #selector(self.toggleImage), userInfo: nil, repeats: false)
+                timeInterval: 4.5,
+                target: self,
+                selector: #selector(self.toggleImage), userInfo: nil, repeats: false)
         }
     }
     func hideImage(){
+        ViewController.terminalImageTimer?.invalidate()
         terminalImage.isHidden = true
         ViewController.terminalImageTimer = Timer.scheduledTimer(
-        timeInterval: 4.5,
-        target: self,
-        selector: #selector(self.toggleImage), userInfo: nil, repeats: false)
+            timeInterval: 4.5,
+            target: self,
+            selector: #selector(self.toggleImage), userInfo: nil, repeats: false)
     }
     func removeImage(){
         terminalImage.isHidden = true
@@ -666,7 +740,6 @@ class ViewController: NSViewController {
     func invokeImage(from url: URL) {
         getData(from: url) { data, response, error in
             guard let data = data, error == nil else { self.tprint("ERROR: Fail loading artwork"); return }
-            print(response?.suggestedFilename ?? url.lastPathComponent)
             DispatchQueue.main.async() { [weak self] in
                 self?.terminalImage.image = NSImage(data: data)
             }
@@ -676,12 +749,12 @@ class ViewController: NSViewController {
         if ViewController.systemStatus == .playing
             || ViewController.systemStatus == .paused
             || ViewController.systemStatus == .ready{
-        let animation = CABasicAnimation(keyPath: "position.y")
-        animation.byValue = -170.0
-        animation.duration = 3.0
-        animation.repeatCount = 1
-        animation.isRemovedOnCompletion = true
-        glitchStripe.layer?.add(animation, forKey: nil)
+            let animation = CABasicAnimation(keyPath: "position.y")
+            animation.byValue = -170.0
+            animation.duration = 3.0
+            animation.repeatCount = 1
+            animation.isRemovedOnCompletion = true
+            glitchStripe.layer?.add(animation, forKey: nil)
         }
     }
 }
