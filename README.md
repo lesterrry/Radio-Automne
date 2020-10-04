@@ -2,7 +2,7 @@
 World wide web audio receiving machine
 
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
-[![Release](https://img.shields.io/badge/latest%20release-v0.1.1-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
+[![Release](https://img.shields.io/badge/latest%20release-v0.2.0-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/tag/v0.1.1)
 ![Screenshot](https://github.com/Lesterrry/Radio-Automne/blob/main/screeens/main.png)
 ## User manual
@@ -27,4 +27,6 @@ Setting keys:
 
 | Setting | Keys |
 | ------ | ------ |
-| Display artwork | 1 - do not display, 2 – display track artwork, 3 – display playlist artwork |
+| Display artwork | 0 - do not display, 1 – display track artwork, 2 – display playlist artwork |
+| Appearance | 1 - House in the Woods, 2 - Hi-Fi Black, 3 - Lost in Belize |
+| Quick Boot | 0 - off, 1 - on |
