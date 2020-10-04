@@ -23,6 +23,7 @@ class ViewController: NSViewController {
     //*********************************************************************
     @IBOutlet weak var terminalImage: NSImageView!
     @IBOutlet weak var standbyButton: NSButton!
+    @IBOutlet weak var box: NSImageView!
     @IBOutlet weak var mainLabel: NSTextField!
     @IBOutlet weak var repeatStatusLight: NSImageView!
     @IBOutlet weak var frequencyControllerLabel: NSTextField!
@@ -98,7 +99,7 @@ class ViewController: NSViewController {
         }
         if ViewController.systemStatus == .ready ||
             ViewController.systemStatus == .playing {
-            play()
+            play(from: ViewController.playbackIndex)
         }
         else if ViewController.systemStatus == .paused {
             resume()
@@ -108,16 +109,27 @@ class ViewController: NSViewController {
         if ViewController.systemStatus != .busy{
             SFX.playSFX(sfx: SFX.Effects.buttonClick)
             if ViewController.systemStatus != .error && ViewController.systemStatus != .standby{
-                let els = [SetupMenu.SetupMenuElement(
-                    title: "Display artwork",
-                    value: ViewController.defaults.integer(forKey: "artwork"),
-                    bounds: (1,3),
-                    isAction: false),
-                           SetupMenu.SetupMenuElement(
-                            title: "SAVE",
-                            value: 0,
-                            bounds: (0,1),
-                            isAction: true)]
+                let els = [
+                    SetupMenu.SetupMenuElement(
+                        title: "Display artwork",
+                        value: ViewController.defaults.integer(forKey: "artwork"),
+                        bounds: (0,2),
+                        isAction: false),
+                    SetupMenu.SetupMenuElement(
+                        title: "Appearance",
+                        value: (ViewController.defaults.integer(forKey: "appearance") == 0 ? 1 : ViewController.defaults.integer(forKey: "appearance")),
+                        bounds: (1,3),
+                        isAction: false),
+                    SetupMenu.SetupMenuElement(
+                        title: "Quick boot",
+                        value: ViewController.defaults.integer(forKey: "qboot"),
+                        bounds: (0,1),
+                        isAction: false),
+                    SetupMenu.SetupMenuElement(
+                        title: "[SAVE]",
+                        value: 0,
+                        bounds: (0,1),
+                        isAction: true)]
                 ViewController.smenu = SetupMenu.get(for: els)
                 tclear()
                 tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
@@ -173,6 +185,7 @@ class ViewController: NSViewController {
     static var smenu = SetupMenu(elements: [], selected: 0)
     static var playableQueue: [Tracks] = []
     static var playlistArtwork = ""
+    static var frequencyMessage = ""
     static var playlistArtworkServed = false
     static var playbackIndex = 0
     static var selectedFrequency: AutomneProperties.Frequency? = nil
@@ -189,17 +202,23 @@ class ViewController: NSViewController {
     static var savedVolume = -1
     static var firstCall = true
     static var mainDisplayState = MainDisplayState.song
-    static let states = [MainDisplayState.volume, MainDisplayState.frequency, MainDisplayState.song, MainDisplayState.artist, MainDisplayState.time]
     static var inMenu = false
     static var description: String = ""
+    
+    //*********************************************************************
+    //CONSTS
+    //*********************************************************************
+    let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
     static let defaults = UserDefaults.standard
     let fetchLogo = "### ### ### ### # #\n#   #    #  #   # #\n##  ###  #  #   ###\n#   #    #  #   # #\n#   ###  #  ### # #"
+    static let states = [MainDisplayState.volume, MainDisplayState.frequency, MainDisplayState.song, MainDisplayState.artist, MainDisplayState.time]
     
     //*********************************************************************
     //FUNCTIONS
     //*********************************************************************
     override func viewDidLoad() {
         super.viewDidLoad()
+        updateAppearance()
         allLights = [frequencyControllerLight_new,
                      frequencyControllerLight_tune,
                      repeatStatusLight,
@@ -228,6 +247,24 @@ class ViewController: NSViewController {
     }
     
     ///System
+    func updateAppearance(){
+        switch ViewController.defaults.integer(forKey: "appearance") {
+        case 0,1:
+            ViewController.defaults.set(1, forKey: "appearance")
+            volumeKnob.image = NSImage.init(named: "VolumeKnob_1")
+            box.image = NSImage.init(named: "Box_1")
+            standbyButton.image = NSImage.init(named: "OnStandby_1")
+        case 2:
+            volumeKnob.image = NSImage.init(named: "VolumeKnob_1")
+            box.image = NSImage.init(named: "Box_2")
+            standbyButton.image = NSImage.init(named: "OnStandby_1")
+        case 3:
+            volumeKnob.image = NSImage.init(named: "VolumeKnob_3")
+            box.image = NSImage.init(named: "Box_3")
+            standbyButton.image = NSImage.init(named: "OnStandby_3")
+        default: ()
+        }
+    }
     override func keyDown(with event: NSEvent) {
         hideImage()
         manual.isHidden = true
@@ -254,55 +291,76 @@ class ViewController: NSViewController {
                 tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
             }
         }
+        if event.keyCode == 49{
+            if ViewController.systemStatus == .ready{
+                play(from: ViewController.playbackIndex)
+            }
+            else if ViewController.systemStatus == .playing {
+                pause()
+            }
+            else if ViewController.systemStatus == .paused {
+                resume()
+            }
+        }
     }
     func saveDefaults(){
         ViewController.defaults.set(ViewController.smenu.elements[0].value, forKey: "artwork")
+        ViewController.defaults.set(ViewController.smenu.elements[1].value, forKey: "appearance")
+        ViewController.defaults.set(ViewController.smenu.elements[2].value, forKey: "qboot")
         ViewController.inMenu = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
             self.tclear()
             self.tprint("Configuration saved")
+            self.updateAppearance()
         }
     }
     func powerOn(){
-        standbyButton.image = NSImage(named: "OnStandby_on")
+        tprint("Booting AutomneOS", raw: true)
+        tprint("v" + (appVersion ?? "?") + "...", raw: true)
+        glitchStripe.isHidden = false
         setSystemStatus(to: AutomneProperties.SystemStatus.busy)
-        SFX.playSFX(sfx: SFX.Effects.powerOn)
-        for light in allLights {
-            light.isHidden = false
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-            for light in self.allLights {
-                light.isHidden = true
+        if ViewController.defaults.integer(forKey: "qboot") == 0{
+            SFX.playSFX(sfx: SFX.Effects.powerOn)
+            for light in allLights {
+                light.isHidden = false
             }
-            self.setPlaybackLabel(to: "Radio Automne")
-            self.tprint("Loading mainframe...")
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            self.tprint("SUCCESS")
-            self.tprint("Making leaves yellow...")
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
-            self.tprint("SUCCESS")
-            self.setFreqLabel(to: "Configuring...")
-            self.tprint("Configuring mod...")
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5.5) {
-            self.tprint("SUCCESS")
-            self.setFreqLabel(to: "Configured")
-            self.tprint("Compiling 'Endless Autumn.scpt'...")
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 8.35) {
-            self.tclear()
-            self.tprint(self.fetchLogo, raw: true, noBreak: true)
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 12) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                for light in self.allLights {
+                    light.isHidden = true
+                }
+                self.setPlaybackLabel(to: "Radio Automne")
+                self.tprint("Loading mainframe...")
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                self.tprint("SUCCESS")
+                self.tprint("Making leaves yellow...")
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                self.tprint("SUCCESS")
+                self.setFreqLabel(to: "Configuring...")
+                self.tprint("Configuring mod...")
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.5) {
+                self.tprint("SUCCESS")
+                self.setFreqLabel(to: "Configured")
+                self.tprint("Compiling 'Endless Autumn.scpt'...")
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 8.35) {
+                self.tclear()
+                self.tprint(self.fetchLogo, raw: true, noBreak: true)
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 12) {
+                self.retrieveFrequencies(initial: true)
+            }
+        } else{
+            self.tprint("[QUICK BOOT]")
             self.retrieveFrequencies(initial: true)
         }
     }
     
     func powerOff(){
+        glitchStripe.isHidden = true
         removeImage()
-        standbyButton.image = NSImage(named: "OnStandby_off")
         setSystemStatus(to: .standby)
         setFreqLabel(to: "")
         setPlaybackLabel(to: "")
@@ -383,9 +441,11 @@ class ViewController: NSViewController {
         case none
     }
     @objc func checkPlayLight(){
-        playbackControllerLight_play.isHidden = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.playbackControllerLight_play.isHidden = true
+        if ViewController.systemStatus == .playing{
+            playbackControllerLight_play.isHidden = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.playbackControllerLight_play.isHidden = true
+            }
         }
     }
     func setPlaybackControllerState(to: PlaybackControllerState){
@@ -480,16 +540,16 @@ class ViewController: NSViewController {
                 self.setPlaybackControllerState(to: .playing)
             }
             switch ViewController.defaults.integer(forKey: "artwork") {
-            case 2:
+            case 1:
                 if ViewController.playableQueue[ViewController.playbackIndex].artwork_url != nil{
                     DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                        self.invokeImage(from: URL(string: ViewController.playableQueue[ViewController.playbackIndex].artwork_url!)!)
+                        self.invokeImage(from: URL(string: ((ViewController.playableQueue[ViewController.playbackIndex].artwork_url)?.replacingOccurrences(of: "large", with: "t500x500"))!)!)
                     }
                 }
-            case 3:
+            case 2:
                 if ViewController.playlistArtwork != "" && !ViewController.playlistArtworkServed{
                     DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                        self.invokeImage(from: URL(string: ViewController.playlistArtwork)!)
+                        self.invokeImage(from: URL(string: ViewController.playlistArtwork.replacingOccurrences(of: "large", with: "t500x500"))!)
                         ViewController.playlistArtworkServed = true
                     }
                 }
@@ -538,6 +598,7 @@ class ViewController: NSViewController {
                         self.switchFrequency(to: ViewController.retrievedFrequencies[0], index: 0)
                         self.tprint("SUCCESS")
                         self.tprint("Retrieved " + String(ViewController.retrievedFrequencies.count) + " frequencies")
+                        ViewController.frequencyMessage = obj.message ?? "No message"
                         if(initial){
                             self.retrieveTracks(frequency: ViewController.selectedFrequency!, initial: true)
                         }else{
@@ -561,7 +622,7 @@ class ViewController: NSViewController {
     }
     
     func retrieveTracks(frequency: AutomneProperties.Frequency, initial: Bool = false){
-        setPlaybackLabel(to: "Wait...")
+        setPlaybackLabel(to: ". . . . .")
         setFreqLight(to: .tuning, new: frequency.isNew!)
         if !initial { SFX.playSFX(sfx: SFX.Effects.radioSetup) }
         setSystemStatus(to: AutomneProperties.SystemStatus.busy)
@@ -582,23 +643,30 @@ class ViewController: NSViewController {
                     let decoder = JSONDecoder()
                     let obj = try decoder.decode(Playlist.self, from: response.data!)
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        self.fillQueue(with: obj.tracks!)
-                        ViewController.description = obj.description ?? "No description"
-                        ViewController.playlistArtwork = obj.artwork_url ?? ""
-                        self.setSystemStatus(to: AutomneProperties.SystemStatus.ready)
-                        self.setPlaybackLabel(to: "Ready")
-                        SFX.shutUp()
-                        self.setFreqLight(to: .tuned, new: frequency.isNew!)
-                        ViewController.setFrequencyIndex = ViewController.selectedFrequencyIndex
-                        self.tprint("SUCCESS")
-                        self.tprint("***", raw: true)
-                        self.tprint("Player is ready", raw: true)
-                        self.tprint("***", raw: true)
-                        if ViewController.defaults.integer(forKey: "artwork") == 0{
-                            self.tprint("Power is applied for the first time, it's recommended to press 'HELP'.", raw: true)
-                            self.tprint("Check 'automne.fetchdev.host' for further info", raw: true)
+                        if obj.tracks != nil{
+                            self.fillQueue(with: obj.tracks!)
+                            ViewController.description = obj.description ?? "No description"
+                            ViewController.playlistArtwork = obj.artwork_url ?? ""
+                            self.setSystemStatus(to: AutomneProperties.SystemStatus.ready)
+                            self.setPlaybackLabel(to: "Ready")
+                            SFX.shutUp()
+                            self.setFreqLight(to: .tuned, new: frequency.isNew!)
+                            ViewController.setFrequencyIndex = ViewController.selectedFrequencyIndex
+                            self.tprint("SUCCESS")
                             self.tprint("***", raw: true)
-                            ViewController.defaults.set(2, forKey: "artwork")
+                            self.tprint("[First Responder message]", raw: true, noBreak: true)
+                            self.tprint(ViewController.frequencyMessage, raw: true)
+                            self.tprint("***", raw: true)
+                            if ViewController.defaults.integer(forKey: "appearance") == 0{
+                                self.tprint("Power is applied for the first time, it's recommended to press 'HELP'.", raw: true)
+                                self.tprint("Check 'automne.fetchdev.host' for further info", raw: true)
+                                self.tprint("***", raw: true)
+                                ViewController.defaults.set(2, forKey: "artwork")
+                            }
+                        } else {
+                            self.tprint("ERROR10: No tracks/broken frequency")
+                            self.setSystemStatus(to: AutomneProperties.SystemStatus.error)
+                            SFX.shutUp()
                         }
                     }
                 }
