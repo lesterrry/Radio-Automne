@@ -4,7 +4,7 @@ World wide web audio receiving machine
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
 [![Release](https://img.shields.io/badge/latest%20release-v0.2.0-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
-![Screenshot](https://github.com/Lesterrry/Radio-Automne/blob/main/screeens/main.png)
+![Screenshot](https://github.com/Lesterrry/Radio-Automne/blob/main/screeens/Main.gif)
 ## User manual
 ### 1. Applying power
 Power is applied by pressing the ON/STANDBY button. Machine immediately starts booting and retrieving available frequencies.
