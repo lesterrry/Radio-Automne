@@ -2,7 +2,7 @@
 World wide web audio receiving machine
 
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
-[![Release](https://img.shields.io/badge/latest%20release-v0.1.1-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/tag/v0.1.1)
+[![Release](https://img.shields.io/badge/latest%20release-v0.1.1-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/tag/v0.1.1)
 ![Screenshot](https://github.com/Lesterrry/Radio-Automne/blob/main/screeens/main.png)
 ## User manual
