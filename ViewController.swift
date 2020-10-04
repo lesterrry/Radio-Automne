@@ -218,6 +218,10 @@ class ViewController: NSViewController {
     //*********************************************************************
     override func viewDidLoad() {
         super.viewDidLoad()
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) {
+            self.myKeyDown(with: $0)
+            return $0
+        }
         updateAppearance()
         allLights = [frequencyControllerLight_new,
                      frequencyControllerLight_tune,
@@ -265,7 +269,8 @@ class ViewController: NSViewController {
         default: ()
         }
     }
-    override func keyDown(with event: NSEvent) {
+    func myKeyDown(with event: NSEvent) {
+        super.keyDown(with: event)
         hideImage()
         manual.isHidden = true
         if ViewController.inMenu{
@@ -520,7 +525,7 @@ class ViewController: NSViewController {
         ViewController.playbackIndex = from
         let track = ViewController.playableQueue[from]
         let url = URL(string: track.stream_url!
-            + AutomneAxioms.SCTailQueue + AutomneKeys.scKey)
+                        + AutomneAxioms.SCTailQueue + AutomneKeys.scKey)
         ViewController.player = AVPlayer(url: url!)
         let playerItem = AVPlayerItem.init(url: url!)
         NotificationCenter.default.addObserver(self, selector: #selector(self.playerDidFinishPlaying(sender:)),
@@ -585,7 +590,7 @@ class ViewController: NSViewController {
         let url = URL(
             string: AutomneAxioms.firstResponderNoseQueue +
                 AutomneKeys.firstResponderKey
-            )!
+        )!
         AF.request(url).response { response in
             switch response.result {
             case .success( _):
@@ -634,7 +639,7 @@ class ViewController: NSViewController {
                 + frequency.playlistID!
                 + AutomneAxioms.SCTailQueue
                 + AutomneKeys.scKey
-            )!
+        )!
         
         AF.request(url).response { response in
             switch response.result {
