@@ -24,6 +24,7 @@ Repeat button, when pressed, loops playback on current track.
 System status indicator is located underneath Standby button. Colourless indicator means the machine is currently off, yellow means it’s busy, green – ready or playing, and red means that the machine has encountered an error. Usually, error descriptions are shown in the Terminal.
 ### 5. Personalizing the machine
 To precisely set up the machile, user should press Setup button. Thus, a Setup menu will be shown in the Terminal window. Switching between settings is done by preessing Up and Down keys, while their values are set using Right and Left ones.
+Note: sleep timer function needs your special permission if runnung for the first time. Set the timer for 10 minutes and wait for it to fire. Click yes in the appeared window, and you're ready to go.
 
 Setting keys:
 
@@ -32,3 +33,4 @@ Setting keys:
 | Display artwork | 0 - do not display, 1 – display track artwork, 2 – display playlist artwork |
 | Appearance | 1 - House in the Woods, 2 - Hi-Fi Black, 3 - Lost in Belize |
 | Quick Boot | 0 - off, 1 - on |
+| Sleep Timer | 1 = 10 mins, 9 = 90 mins |
