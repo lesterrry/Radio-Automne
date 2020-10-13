@@ -126,6 +126,11 @@ class ViewController: NSViewController {
                         bounds: (0,1),
                         isAction: false),
                     SetupMenu.SetupMenuElement(
+                        title: "Sleep timer",
+                        value: 0,
+                        bounds: (0,9),
+                        isAction: false),
+                    SetupMenu.SetupMenuElement(
                         title: "[SAVE]",
                         value: 0,
                         bounds: (0,1),
@@ -196,6 +201,7 @@ class ViewController: NSViewController {
     static var ticker: Timer!
     static var pauseLightBlinkTimer: Timer!
     static var mainDisplaySwitchTimer: Timer!
+    static var sleepTimer: Timer!
     static var longTicker: Timer!
     static var terminalImageTimer: Timer!
     static var volumeKnobAngle: CGFloat = 0.0
@@ -318,6 +324,17 @@ class ViewController: NSViewController {
             self.tprint("Configuration saved")
             self.updateAppearance()
         }
+        ViewController.sleepTimer?.invalidate()
+        if ViewController.smenu.elements[3].value != 0{
+            ViewController.sleepTimer = Timer.scheduledTimer(
+                timeInterval: TimeInterval(ViewController.smenu.elements[3].value * 600),
+            target: self,
+            selector: #selector(self.sleep), userInfo: nil, repeats: false)
+        }
+    }
+    @objc func sleep(){
+        powerOff()
+        AutomneCore.systemSleep()
     }
     func powerOn(){
         tprint("Booting AutomneOS", raw: true)

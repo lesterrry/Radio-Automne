@@ -10,17 +10,29 @@ import Foundation
 import AudioToolbox
 
 class AutomneCore {
-    private static let url = Bundle.main.url(forResource: "GetVolume", withExtension: "scpt")
-    private static var error: NSDictionary?
-    private static let scriptObject = NSAppleScript(contentsOf: url!, error: &error)
+    private static let volurl = Bundle.main.url(forResource: "GetVolume", withExtension: "scpt")
+    private static var volerror: NSDictionary?
+    private static let volscriptObject = NSAppleScript(contentsOf: volurl!, error: &volerror)
+    
+    private static let slurl = Bundle.main.url(forResource: "SystemSleep", withExtension: "scpt")
+    private static var slerror: NSDictionary?
+    private static let slscriptObject = NSAppleScript(contentsOf: slurl!, error: &slerror)
+    
     public static func getSystemVolume() -> Int{
-        if let outputString = scriptObject?.executeAndReturnError(&error).stringValue {
+        if let outputString = volscriptObject?.executeAndReturnError(&volerror).stringValue {
             return Int(outputString) ?? -1
-        } else if (error != nil) {
-            print("ERROR8: ", error!)
+        } else if (volerror != nil) {
+            print("ERROR8: ", volerror!)
             return -1
         }
         
         return -1
+    }
+    public static func systemSleep(){
+        if (slscriptObject?.executeAndReturnError(&slerror).stringValue) != nil {
+            
+        } else if (slerror != nil) {
+            print("ERROR9: " + slerror!.description)
+        }
     }
 }

@@ -35,6 +35,8 @@
 	</dict>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2020 Fetch Development. All rights reserved.</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>This is required for Automne to sleep your Mac when sleep timer fires</string>
 	<key>NSMainStoryboardFile</key>
 	<string>Main</string>
 	<key>NSPrincipalClass</key>
