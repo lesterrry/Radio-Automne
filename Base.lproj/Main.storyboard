@@ -83,7 +83,7 @@
         <scene sceneID="R2V-B0-nI4">
             <objects>
                 <windowController id="B8D-0N-5wS" sceneMemberID="viewController">
-                    <window key="window" title="Radio Automne" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" appearanceType="darkAqua" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="IQv-IB-iLA">
+                    <window key="window" title="Radio Automne" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" appearanceType="darkAqua" animationBehavior="default" titlebarAppearsTransparent="YES" titleVisibility="hidden" id="IQv-IB-iLA" customClass="MainWindow" customModule="Radio_Automne" customModuleProvider="target">
                         <windowStyleMask key="styleMask" titled="YES" fullSizeContentView="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="196" y="240" width="576" height="284"/>
@@ -104,7 +104,7 @@
         <scene sceneID="hIz-AP-VOD">
             <objects>
                 <viewController id="XfG-lQ-9wD" customClass="ViewController" customModule="Radio_Automne" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" appearanceType="darkAqua" id="m2S-Jp-Qdl">
+                    <view key="view" appearanceType="darkAqua" id="m2S-Jp-Qdl" customClass="View" customModule="Radio_Automne" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="934" height="410"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
@@ -308,6 +308,11 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="PlaybackContLight_error" id="0P2-4o-20y"/>
                             </imageView>
+                            <imageView hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="x4p-Pu-n7g" userLabel="PlaybackContLight_error">
+                                <rect key="frame" x="463" y="281" width="88" height="66"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="PlaybackContLight_sleep" id="xJS-hh-Bdf"/>
+                            </imageView>
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mO4-tG-IzA" userLabel="SetupButton">
                                 <rect key="frame" x="301" y="39" width="87" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -355,6 +360,7 @@
                         <outlet property="playbackControllerLight_loading" destination="tJe-uM-7BO" id="sMB-MG-gmU"/>
                         <outlet property="playbackControllerLight_pause" destination="zhb-n7-Obz" id="cHL-VI-GTV"/>
                         <outlet property="playbackControllerLight_play" destination="qTM-uv-UIn" id="rk3-IW-Z6s"/>
+                        <outlet property="playbackControllerLight_sleep" destination="x4p-Pu-n7g" id="Ld1-Lb-a87"/>
                         <outlet property="repeatStatusLight" destination="gTh-g7-MsJ" id="RYs-h7-Bel"/>
                         <outlet property="standbyButton" destination="yyr-pi-4Tj" id="2H3-7P-2z4"/>
                         <outlet property="statusLight" destination="0UP-2q-S4u" id="U9C-0w-dvu"/>
@@ -376,6 +382,7 @@
         <image name="PlaybackContLight_loading" width="169" height="91"/>
         <image name="PlaybackContLight_pause" width="103.5" height="97"/>
         <image name="PlaybackContLight_play" width="71" height="74.5"/>
+        <image name="PlaybackContLight_sleep" width="277" height="203"/>
         <image name="RepeatStatusLight" width="194.5" height="170.5"/>
         <image name="StatusLight_standby" width="334.5" height="150"/>
         <image name="TVStripe" width="353.5" height="77.5"/>
