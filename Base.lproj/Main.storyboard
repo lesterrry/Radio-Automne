@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaDFRPlugin" version="16002"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16096"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+        <capability name="the Touch Bar" minToolsVersion="8.1" minSystemVersion="10.12.2" requiredIntegratedClassName="NSTouchBar"/>
     </dependencies>
     <scenes>
         <!--Application-->
@@ -77,7 +79,7 @@
                 <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="75" y="0.0"/>
+            <point key="canvasLocation" x="211" y="-88"/>
         </scene>
         <!--Window Controller-->
         <scene sceneID="R2V-B0-nI4">
@@ -87,7 +89,7 @@
                         <windowStyleMask key="styleMask" titled="YES" fullSizeContentView="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="196" y="240" width="576" height="284"/>
-                        <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+                        <rect key="screenRect" x="0.0" y="0.0" width="1440" height="875"/>
                         <connections>
                             <outlet property="delegate" destination="B8D-0N-5wS" id="98r-iN-zZc"/>
                         </connections>
@@ -349,12 +351,15 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="TBLabel" destination="06q-t7-XrT" id="wtj-7f-4Ax"/>
+                        <outlet property="TBStatusLight" destination="oVN-hV-Ji0" id="eYN-Ua-GsD"/>
+                        <outlet property="bar" destination="rpS-XU-v84" id="1jy-8D-fdW"/>
                         <outlet property="box" destination="Syu-GY-ojA" id="awR-PA-OMQ"/>
                         <outlet property="frequencyControllerLabel" destination="aBV-86-dfJ" id="KWL-2X-tDO"/>
                         <outlet property="frequencyControllerLight_new" destination="yUr-m8-ZbN" id="fUc-fo-EU5"/>
                         <outlet property="frequencyControllerLight_tune" destination="PYq-Aq-Wpl" id="1Je-uf-WVp"/>
                         <outlet property="glitchStripe" destination="R31-XN-wg3" id="4mI-EJ-Mcn"/>
-                        <outlet property="mainLabel" destination="Zjg-Xw-G1T" id="Iw2-9K-S7t"/>
+                        <outlet property="mainLabel" destination="Zjg-Xw-G1T" id="wV4-Y6-bMy"/>
                         <outlet property="manual" destination="Fqq-Db-J6M" id="PD1-1D-ac3"/>
                         <outlet property="playbackControllerLight_error" destination="LLb-WQ-0Vn" id="SG8-Gk-Kj9"/>
                         <outlet property="playbackControllerLight_loading" destination="tJe-uM-7BO" id="sMB-MG-gmU"/>
@@ -363,13 +368,59 @@
                         <outlet property="playbackControllerLight_sleep" destination="x4p-Pu-n7g" id="Ld1-Lb-a87"/>
                         <outlet property="repeatStatusLight" destination="gTh-g7-MsJ" id="RYs-h7-Bel"/>
                         <outlet property="standbyButton" destination="yyr-pi-4Tj" id="2H3-7P-2z4"/>
-                        <outlet property="statusLight" destination="0UP-2q-S4u" id="U9C-0w-dvu"/>
+                        <outlet property="statusLight" destination="0UP-2q-S4u" id="vxv-3m-EZK"/>
                         <outlet property="terminal" destination="UVI-nK-ohO" id="L1c-EX-axC"/>
                         <outlet property="terminalImage" destination="8Uq-oq-ZZ4" id="6vP-vd-5tp"/>
                         <outlet property="volumeKnob" destination="okp-ad-eQg" id="4mi-Fg-AD9"/>
                     </connections>
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+                <touchBar id="rpS-XU-v84" userLabel="TouchBar">
+                    <touchBarItems>
+                        <touchBarItem id="v5L-RU-ydD">
+                            <viewController key="viewController" id="z19-3l-Ptk">
+                                <view key="view" placeholderIntrinsicWidth="685" placeholderIntrinsicHeight="30" translatesAutoresizingMaskIntoConstraints="NO" id="ouv-lT-Gk6" customClass="View" customModule="Radio_Automne" customModuleProvider="target">
+                                    <rect key="frame" x="0.0" y="0.0" width="685" height="30"/>
+                                    <subviews>
+                                        <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="fyY-h2-HG2">
+                                            <rect key="frame" x="0.0" y="7" width="225" height="21"/>
+                                            <constraints>
+                                                <constraint firstAttribute="height" constant="21" id="6Zu-RU-7kw"/>
+                                                <constraint firstAttribute="width" constant="225" id="855-Al-TYl"/>
+                                            </constraints>
+                                            <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="touchBar_img" id="n2y-oZ-KCZ"/>
+                                        </imageView>
+                                        <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="oVN-hV-Ji0">
+                                            <rect key="frame" x="-44" y="-63" width="323" height="121"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" constant="323" id="FoT-ml-Ztj"/>
+                                                <constraint firstAttribute="height" constant="121" id="JI9-1W-5iI"/>
+                                            </constraints>
+                                            <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="StatusLight_standby" id="rzn-uW-p6C"/>
+                                        </imageView>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="06q-t7-XrT" customClass="TBLabel" customModule="Radio_Automne" customModuleProvider="target">
+                                            <rect key="frame" x="269" y="3" width="418" height="23"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" id="BO4-1D-uf9">
+                                                <font key="font" size="16" name="AndaleMono"/>
+                                                <color key="textColor" red="0.33333333329999998" green="0.66274509800000003" blue="0.29411764709999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="fyY-h2-HG2" firstAttribute="top" secondItem="ouv-lT-Gk6" secondAttribute="top" constant="2" id="Ofw-tW-EeU"/>
+                                        <constraint firstAttribute="bottom" secondItem="oVN-hV-Ji0" secondAttribute="bottom" constant="-63" id="XbQ-Je-Fph"/>
+                                        <constraint firstAttribute="bottom" secondItem="fyY-h2-HG2" secondAttribute="bottom" constant="7" id="jXQ-dg-BBY"/>
+                                        <constraint firstItem="oVN-hV-Ji0" firstAttribute="top" secondItem="ouv-lT-Gk6" secondAttribute="top" constant="-28" id="sVd-ol-V0U"/>
+                                        <constraint firstItem="fyY-h2-HG2" firstAttribute="leading" secondItem="ouv-lT-Gk6" secondAttribute="leading" id="sf1-kJ-rpM"/>
+                                        <constraint firstItem="oVN-hV-Ji0" firstAttribute="leading" secondItem="ouv-lT-Gk6" secondAttribute="leading" constant="-44" id="zYp-Io-z1R"/>
+                                    </constraints>
+                                </view>
+                            </viewController>
+                        </touchBarItem>
+                    </touchBarItems>
+                </touchBar>
             </objects>
             <point key="canvasLocation" x="281" y="875"/>
         </scene>
@@ -386,5 +437,6 @@
         <image name="RepeatStatusLight" width="194.5" height="170.5"/>
         <image name="StatusLight_standby" width="334.5" height="150"/>
         <image name="TVStripe" width="353.5" height="77.5"/>
+        <image name="touchBar_img" width="3409" height="338"/>
     </resources>
 </document>

@@ -11,13 +11,6 @@ import Alamofire
 import AVFoundation
 import AudioToolbox
 
-//class MainWindow: NSWindow {
-//    override func keyDown(with: NSEvent) {
-//        super.keyDown(with: with)
-//        Swift.print("Caught a key down: \(with.keyCode)!")
-//    }
-//}
-
 class View: NSView {
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         return true
@@ -34,14 +27,17 @@ class ViewController: NSViewController{
     //*********************************************************************
     //OUTLETS
     //*********************************************************************
+    @IBOutlet var bar: NSTouchBar!
     @IBOutlet weak var terminalImage: NSImageView!
     @IBOutlet weak var standbyButton: NSButton!
     @IBOutlet weak var box: NSImageView!
     @IBOutlet weak var mainLabel: NSTextField!
+    @IBOutlet weak var TBLabel: NSTextField!
     @IBOutlet weak var repeatStatusLight: NSImageView!
     @IBOutlet weak var frequencyControllerLabel: NSTextField!
     @IBOutlet weak var volumeKnob: NSImageView!
     @IBOutlet weak var statusLight: NSImageView!
+    @IBOutlet weak var TBStatusLight: NSImageView!
     @IBAction func pauseClicked(_ sender: Any) {
         if ViewController.systemStatus != .busy{
             SFX.playSFX(sfx: SFX.Effects.buttonClick)
@@ -242,8 +238,10 @@ class ViewController: NSViewController{
     //*********************************************************************
     //FUNCTIONS
     //*********************************************************************
-    override func viewDidLoad() {
-        super.viewDidLoad()
+
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        touchBar = bar
         NSEvent.addLocalMonitorForEvents(matching: .keyDown) {
             self.myKeyDown(with: $0)
             return $0
@@ -367,6 +365,7 @@ class ViewController: NSViewController{
         tprint("v" + (appVersion ?? "?") + "...", raw: true)
         glitchStripe.isHidden = false
         setSystemStatus(to: AutomneProperties.SystemStatus.busy)
+        TBLabel.stringValue = "Booting..."
         
         if ViewController.defaults.integer(forKey: "qboot") == 0{
             SFX.playSFX(sfx: SFX.Effects.powerOn)
@@ -411,6 +410,7 @@ class ViewController: NSViewController{
     }
     
     func powerOff(){
+        TBLabel.stringValue = ""
         glitchStripe.isHidden = true
         removeImage()
         ViewController.sleepTimer?.invalidate()
@@ -460,7 +460,7 @@ class ViewController: NSViewController{
             let muzzle = "   -" + String(val / 60) + ":"
             let withers = (pSec < 10 ? ("0" + String(pSec)) : String(pSec))
             let tail = (stdv == nil ? "" : ("    Sleep: " + stdv!))
-            self.mainLabel.stringValue = muzzle + withers + tail
+            self.setPlaybackLabel(to: muzzle + withers + tail)
         }
     }
     func setSystemStatus(to: AutomneProperties.SystemStatus){
@@ -468,8 +468,10 @@ class ViewController: NSViewController{
         switch to {
         case .playing, .ready, .paused:
             statusLight.image = NSImage.init(named: "StatusLight_ready")
+            TBStatusLight.image = NSImage.init(named: "StatusLight_ready")
         default:
             statusLight.image = NSImage.init(named: "StatusLight_" + to.rawValue)
+            TBStatusLight.image = NSImage.init(named: "StatusLight_" + to.rawValue)
         }
     }
     
@@ -645,6 +647,7 @@ class ViewController: NSViewController{
         SFX.playSFX(sfx: SFX.Effects.radioSetup)
         tprint("Connecting to First Responder...")
         setFreqLabel(to: "Retrieving...")
+        TBLabel.stringValue = "Retrieving..."
         self.setSystemStatus(to: AutomneProperties.SystemStatus.busy)
         self.setPlaybackControllerState(to: .none)
         let url = URL(
@@ -690,6 +693,7 @@ class ViewController: NSViewController{
     func retrieveTracks(frequency: AutomneProperties.Frequency, initial: Bool = false){
         ViewController.sleepTimer?.invalidate()
         setPlaybackLabel(to: ". . . . .")
+        TBLabel.stringValue = ". . . . ."
         setFreqLight(to: .tuning, new: frequency.isNew!)
         if !initial { SFX.playSFX(sfx: SFX.Effects.radioSetup) }
         setSystemStatus(to: AutomneProperties.SystemStatus.busy)
@@ -716,6 +720,7 @@ class ViewController: NSViewController{
                             ViewController.playlistArtwork = obj.artwork_url ?? ""
                             self.setSystemStatus(to: AutomneProperties.SystemStatus.ready)
                             self.setPlaybackLabel(to: "Ready")
+                            self.TBLabel.stringValue = "Automne is ready"
                             SFX.shutUp()
                             self.setFreqLight(to: .tuned, new: frequency.isNew!)
                             ViewController.setFrequencyIndex = ViewController.selectedFrequencyIndex
@@ -809,19 +814,20 @@ class ViewController: NSViewController{
     
     @objc func mainDisplayTick(){
         if ViewController.systemStatus == .playing || ViewController.systemStatus == .paused{
+            TBLabel.stringValue = ViewController.description
             let fi = ViewController.states.firstIndex(of: ViewController.mainDisplayState) ?? 0
             ViewController.mainDisplayState =
                 ViewController.states[fi == ViewController.states.count - 1 ? 0 : fi + 1]
             switch ViewController.mainDisplayState {
             case .song:
-                mainLabel.stringValue = ViewController.playableQueue[ViewController.playbackIndex].title ?? "Unknown title"
+                setPlaybackLabel(to: ViewController.playableQueue[ViewController.playbackIndex].title ?? "Unknown title")
             case .artist:
-                mainLabel.stringValue = "By " +
-                    (ViewController.playableQueue[ViewController.playbackIndex].user?.username ?? "unknown artist")
+                setPlaybackLabel(to: "By " +
+                    (ViewController.playableQueue[ViewController.playbackIndex].user?.username ?? "unknown artist"))
             case .volume:
-                mainLabel.stringValue = "    Vol: " + String(ViewController.savedVolume)
+                setPlaybackLabel(to: "    Vol: " + String(ViewController.savedVolume))
             case .frequency:
-                mainLabel.stringValue = ViewController.retrievedFrequencies[ViewController.setFrequencyIndex].name ?? "Unknown station"
+                setPlaybackLabel(to: ViewController.retrievedFrequencies[ViewController.setFrequencyIndex].name ?? "Unknown station")
             default: ()
             }
         }
