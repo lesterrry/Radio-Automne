@@ -33,7 +33,7 @@ struct SetupMenu {
         return SetupMenu(elements: `for`, selected: 1)
     }
     
-    public func increment(_ completion: () -> Void = {}) -> SetupMenu{
+    public func increment(_ completion: [() -> ()] = [{}]) -> SetupMenu{
         var els = self.elements
         let sel = self.selected - 1
         if !els[sel].isAction{
@@ -41,7 +41,7 @@ struct SetupMenu {
                 els[sel].value += 1
             }
         }else{
-            completion()
+            completion[sel]()
         }
         return SetupMenu(elements: els, selected: self.selected)
     }

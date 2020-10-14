@@ -11,7 +11,20 @@ import Alamofire
 import AVFoundation
 import AudioToolbox
 
-class ViewController: NSViewController {
+//class MainWindow: NSWindow {
+//    override func keyDown(with: NSEvent) {
+//        super.keyDown(with: with)
+//        Swift.print("Caught a key down: \(with.keyCode)!")
+//    }
+//}
+
+class View: NSView {
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        return true
+    }
+}
+
+class ViewController: NSViewController{
     
     //*********************************************************************
     //SYSTEM
@@ -43,6 +56,7 @@ class ViewController: NSViewController {
     @IBOutlet weak var frequencyControllerLight_new: NSImageView!
     @IBOutlet weak var glitchStripe: NSImageView!
     @IBOutlet weak var playbackControllerLight_play: NSImageView!
+    @IBOutlet weak var playbackControllerLight_sleep: NSImageView!
     @IBOutlet weak var playbackControllerLight_pause: NSImageView!
     @IBOutlet weak var playbackControllerLight_loading: NSImageView!
     @IBOutlet weak var playbackControllerLight_error: NSImageView!
@@ -134,6 +148,11 @@ class ViewController: NSViewController {
                         title: "[SAVE]",
                         value: 0,
                         bounds: (0,1),
+                        isAction: true),
+                    SetupMenu.SetupMenuElement(
+                        title: "[SOURCE CODE]",
+                        value: 0,
+                        bounds: (0,1),
                         isAction: true)]
                 ViewController.smenu = SetupMenu.get(for: els)
                 tclear()
@@ -210,6 +229,7 @@ class ViewController: NSViewController {
     static var mainDisplayState = MainDisplayState.song
     static var inMenu = false
     static var description: String = ""
+    static var latestVersion = ""
     
     //*********************************************************************
     //CONSTS
@@ -235,7 +255,8 @@ class ViewController: NSViewController {
                      playbackControllerLight_play,
                      playbackControllerLight_pause,
                      playbackControllerLight_error,
-                     playbackControllerLight_loading]
+                     playbackControllerLight_loading,
+                     playbackControllerLight_sleep]
         ViewController.ticker = Timer.scheduledTimer(
             timeInterval: 1.0,
             target: self,
@@ -260,7 +281,6 @@ class ViewController: NSViewController {
     func updateAppearance(){
         switch ViewController.defaults.integer(forKey: "appearance") {
         case 0,1:
-            ViewController.defaults.set(1, forKey: "appearance")
             volumeKnob.image = NSImage.init(named: "VolumeKnob_1")
             box.image = NSImage.init(named: "Box_1")
             standbyButton.image = NSImage.init(named: "OnStandby_1")
@@ -293,7 +313,7 @@ class ViewController: NSViewController {
             }
             else if event.keyCode == 0x7C //RIGHT
             {
-                ViewController.smenu = ViewController.smenu.increment(saveDefaults)
+                ViewController.smenu = ViewController.smenu.increment([{},{},{},{},saveDefaults,sendToGithub])
                 tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
             }
             else if event.keyCode == 0x7B //LEFT
@@ -314,6 +334,9 @@ class ViewController: NSViewController {
             }
         }
     }
+    func sendToGithub(){
+        NSWorkspace.shared.open(URL(string: "https://github.com/Lesterrry/Radio-Automne")!)
+    }
     func saveDefaults(){
         ViewController.defaults.set(ViewController.smenu.elements[0].value, forKey: "artwork")
         ViewController.defaults.set(ViewController.smenu.elements[1].value, forKey: "appearance")
@@ -325,7 +348,7 @@ class ViewController: NSViewController {
             self.updateAppearance()
         }
         ViewController.sleepTimer?.invalidate()
-        if ViewController.smenu.elements[3].value != 0{
+        if ViewController.smenu.elements[3].value != 0 && ViewController.systemStatus == .playing{
             ViewController.sleepTimer = Timer.scheduledTimer(
                 timeInterval: TimeInterval(ViewController.smenu.elements[3].value * 600),
             target: self,
@@ -337,15 +360,16 @@ class ViewController: NSViewController {
         AutomneCore.systemSleep()
     }
     func powerOn(){
+        for light in allLights {
+            light.isHidden = false
+        }
         tprint("Booting AutomneOS", raw: true)
         tprint("v" + (appVersion ?? "?") + "...", raw: true)
         glitchStripe.isHidden = false
         setSystemStatus(to: AutomneProperties.SystemStatus.busy)
+        
         if ViewController.defaults.integer(forKey: "qboot") == 0{
             SFX.playSFX(sfx: SFX.Effects.powerOn)
-            for light in allLights {
-                light.isHidden = false
-            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
                 for light in self.allLights {
                     light.isHidden = true
@@ -375,14 +399,21 @@ class ViewController: NSViewController {
                 self.retrieveFrequencies(initial: true)
             }
         } else{
-            self.tprint("[QUICK BOOT]")
-            self.retrieveFrequencies(initial: true)
+            SFX.playSFX(sfx: SFX.Effects.buttonClick)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+                for light in self.allLights {
+                    light.isHidden = true
+                }
+                self.tprint("[QUICK BOOT]")
+                self.retrieveFrequencies(initial: true)
+            }
         }
     }
     
     func powerOff(){
         glitchStripe.isHidden = true
         removeImage()
+        ViewController.sleepTimer?.invalidate()
         setSystemStatus(to: .standby)
         setFreqLabel(to: "")
         setPlaybackLabel(to: "")
@@ -420,7 +451,16 @@ class ViewController: NSViewController {
             let dur = (ViewController.playableQueue[ViewController.playbackIndex].duration ?? 600000) / 1000
             let val = dur - sec
             let pSec = val % 60
-            self.mainLabel.stringValue = "   -" + String(val / 60) + ":" + (pSec < 10 ? ("0" + String(pSec)) : String(pSec))
+            
+            var stdv: String?
+            if ViewController.sleepTimer != nil && ViewController.sleepTimer.isValid{
+                let c = Int(floor(Date.init().distance(to: ViewController.sleepTimer.fireDate)))
+                stdv = String(c / 60) + ":" + String(c % 60)
+            }
+            let muzzle = "   -" + String(val / 60) + ":"
+            let withers = (pSec < 10 ? ("0" + String(pSec)) : String(pSec))
+            let tail = (stdv == nil ? "" : ("    Sleep: " + stdv!))
+            self.mainLabel.stringValue = muzzle + withers + tail
         }
     }
     func setSystemStatus(to: AutomneProperties.SystemStatus){
@@ -465,8 +505,11 @@ class ViewController: NSViewController {
     @objc func checkPlayLight(){
         if ViewController.systemStatus == .playing{
             playbackControllerLight_play.isHidden = false
+            if ViewController.sleepTimer != nil && ViewController.sleepTimer.isValid{
+                playbackControllerLight_sleep.isHidden = false }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 self.playbackControllerLight_play.isHidden = true
+                self.playbackControllerLight_sleep.isHidden = true
             }
         }
     }
@@ -527,7 +570,6 @@ class ViewController: NSViewController {
             tprint("Stream was mixed (2)")
             play(from: 0)
         }
-        
     }
     func play(from: Int = 0){
         tclear()
@@ -581,6 +623,7 @@ class ViewController: NSViewController {
     }
     func pause(){
         ViewController.player.pause()
+        ViewController.sleepTimer?.invalidate()
         setSystemStatus(to: .paused)
         setPlaybackControllerState(to: .paused)
     }
@@ -621,6 +664,7 @@ class ViewController: NSViewController {
                         self.tprint("SUCCESS")
                         self.tprint("Retrieved " + String(ViewController.retrievedFrequencies.count) + " frequencies")
                         ViewController.frequencyMessage = obj.message ?? "No message"
+                        ViewController.latestVersion = obj.version ?? ""
                         if(initial){
                             self.retrieveTracks(frequency: ViewController.selectedFrequency!, initial: true)
                         }else{
@@ -644,6 +688,7 @@ class ViewController: NSViewController {
     }
     
     func retrieveTracks(frequency: AutomneProperties.Frequency, initial: Bool = false){
+        ViewController.sleepTimer?.invalidate()
         setPlaybackLabel(to: ". . . . .")
         setFreqLight(to: .tuning, new: frequency.isNew!)
         if !initial { SFX.playSFX(sfx: SFX.Effects.radioSetup) }
@@ -680,10 +725,15 @@ class ViewController: NSViewController {
                             self.tprint(ViewController.frequencyMessage, raw: true)
                             self.tprint("***", raw: true)
                             if ViewController.defaults.integer(forKey: "appearance") == 0{
+                                ViewController.defaults.set(1, forKey: "appearance")
                                 self.tprint("Power is applied for the first time, it's recommended to press 'HELP'.", raw: true)
                                 self.tprint("Check 'automne.fetchdev.host' for further info", raw: true)
                                 self.tprint("***", raw: true)
                                 ViewController.defaults.set(2, forKey: "artwork")
+                            }
+                            if ViewController.latestVersion != self.appVersion{
+                                self.tprint("ATTENTION: Latest version v\(ViewController.latestVersion) is available at automne.fetchdev.host/release")
+                                self.tprint("")
                             }
                         } else {
                             self.tprint("ERROR10: No tracks/broken frequency")
