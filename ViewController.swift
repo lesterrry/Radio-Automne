@@ -109,7 +109,7 @@ class ViewController: NSViewController{
         }
         if ViewController.systemStatus == .ready ||
             ViewController.systemStatus == .playing {
-            play(from: ViewController.playbackIndex)
+            play(from: ViewController.playbackIndex, init: true)
         }
         else if ViewController.systemStatus == .paused {
             resume()
@@ -118,7 +118,9 @@ class ViewController: NSViewController{
     @IBAction func setupClicked(_ sender: Any) {
         if ViewController.systemStatus != .busy{
             SFX.playSFX(sfx: SFX.Effects.buttonClick)
-            if ViewController.systemStatus != .error && ViewController.systemStatus != .standby{
+            if ViewController.systemStatus != .error
+                && ViewController.systemStatus != .standby
+                && !ViewController.inMenu{
                 let els = [
                     SetupMenu.SetupMenuElement(
                         title: "Display artwork",
@@ -128,7 +130,7 @@ class ViewController: NSViewController{
                     SetupMenu.SetupMenuElement(
                         title: "Appearance",
                         value: (ViewController.defaults.integer(forKey: "appearance") == 0 ? 1 : ViewController.defaults.integer(forKey: "appearance")),
-                        bounds: (1,3),
+                        bounds: (1,4),
                         isAction: false),
                     SetupMenu.SetupMenuElement(
                         title: "Quick boot",
@@ -151,7 +153,7 @@ class ViewController: NSViewController{
                         bounds: (0,1),
                         isAction: true)]
                 ViewController.smenu = SetupMenu.get(for: els)
-                tclear()
+                tclear(cache: true)
                 tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
                 ViewController.inMenu = true
             }
@@ -226,6 +228,8 @@ class ViewController: NSViewController{
     static var inMenu = false
     static var description: String = ""
     static var latestVersion = ""
+    static var TSBP = 0
+    static var terminalCache = ""
     
     //*********************************************************************
     //CONSTS
@@ -290,6 +294,10 @@ class ViewController: NSViewController{
             volumeKnob.image = NSImage.init(named: "VolumeKnob_3")
             box.image = NSImage.init(named: "Box_3")
             standbyButton.image = NSImage.init(named: "OnStandby_3")
+        case 4:
+            volumeKnob.image = NSImage.init(named: "VolumeKnob_3")
+            box.image = NSImage.init(named: "Box_4")
+            standbyButton.image = NSImage.init(named: "OnStandby_3")
         default: ()
         }
     }
@@ -331,6 +339,18 @@ class ViewController: NSViewController{
                 resume()
             }
         }
+        else if event.keyCode == 12{
+            exit(0)
+        }
+        else if event.keyCode == 0{
+            if ViewController.TSBP < 14{
+                ViewController.TSBP += 1
+            } else if ViewController.systemStatus == .playing{
+                ViewController.TSBP = 0
+                tclear()
+                tprint(AutomneKeys.dedication, raw: true, noWipe: true)
+            }
+        }
     }
     func sendToGithub(){
         NSWorkspace.shared.open(URL(string: "https://github.com/Lesterrry/Radio-Automne")!)
@@ -341,7 +361,7 @@ class ViewController: NSViewController{
         ViewController.defaults.set(ViewController.smenu.elements[2].value, forKey: "qboot")
         ViewController.inMenu = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
-            self.tclear()
+            self.trestore()
             self.tprint("Configuration saved")
             self.updateAppearance()
         }
@@ -352,6 +372,7 @@ class ViewController: NSViewController{
             target: self,
             selector: #selector(self.sleep), userInfo: nil, repeats: false)
         }
+        checkAndInvokeImage()
     }
     @objc func sleep(){
         powerOff()
@@ -423,6 +444,7 @@ class ViewController: NSViewController{
         }
         ViewController.pauseLightBlinkTimer?.invalidate()
         terminal.stringValue = ""
+        ViewController.inMenu = false
     }
     
     @objc func longTick(){
@@ -573,16 +595,19 @@ class ViewController: NSViewController{
             play(from: 0)
         }
     }
-    func play(from: Int = 0){
-        tclear()
-        tprint("", raw: true)
-        tprint("", raw: true)
-        tprint(" ***", raw: true)
-        tprint(ViewController.description, raw: true)
-        tprint(" ***", raw: true)
+    func play(from: Int = 0, init: Bool = false){
+        if `init`{
+            tclear()
+            tprint("", raw: true)
+            tprint("", raw: true)
+            tprint(" ***", raw: true)
+            tprint(ViewController.description, raw: true)
+            TBLabel.stringValue = ViewController.description
+            tprint(" ***", raw: true)
+        }else{
+            tprint(AutomneAxioms.messages.randomElement() ?? "Playing...")
+        }
         setPlaybackControllerState(to: .loading)
-        //let url = URL.init(string: "https://api.fetchdev.host/m.mp3")
-        //let url = URL(string: "https://fetchdev.host/s.mp3")
         ViewController.playbackIndex = from
         let track = ViewController.playableQueue[from]
         let url = URL(string: track.stream_url!
@@ -595,6 +620,7 @@ class ViewController: NSViewController{
         ViewController.player = AVPlayer.init(playerItem: playerItem)
         ViewController.player.volume = 1.0
         ViewController.player.play()
+        checkAndInvokeImage()
         if ViewController.player.error != nil{
             setSystemStatus(to: .error)
             setPlaybackControllerState(to: .error)
@@ -605,22 +631,7 @@ class ViewController: NSViewController{
                 self.setSystemStatus(to: .playing)
                 self.setPlaybackControllerState(to: .playing)
             }
-            switch ViewController.defaults.integer(forKey: "artwork") {
-            case 1:
-                if ViewController.playableQueue[ViewController.playbackIndex].artwork_url != nil{
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                        self.invokeImage(from: URL(string: ((ViewController.playableQueue[ViewController.playbackIndex].artwork_url)?.replacingOccurrences(of: "large", with: "t500x500"))!)!)
-                    }
-                }
-            case 2:
-                if ViewController.playlistArtwork != "" && !ViewController.playlistArtworkServed{
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                        self.invokeImage(from: URL(string: ViewController.playlistArtwork.replacingOccurrences(of: "large", with: "t500x500"))!)
-                        ViewController.playlistArtworkServed = true
-                    }
-                }
-            default: ()
-            }
+            
         }
     }
     func pause(){
@@ -728,6 +739,7 @@ class ViewController: NSViewController{
                             self.tprint("***", raw: true)
                             self.tprint("[First Responder message]", raw: true, noBreak: true)
                             self.tprint(ViewController.frequencyMessage, raw: true)
+                            AutomneAxioms.messages.append(ViewController.frequencyMessage)
                             self.tprint("***", raw: true)
                             if ViewController.defaults.integer(forKey: "appearance") == 0{
                                 ViewController.defaults.set(1, forKey: "appearance")
@@ -738,7 +750,6 @@ class ViewController: NSViewController{
                             }
                             if ViewController.latestVersion != self.appVersion{
                                 self.tprint("ATTENTION: Latest version v\(ViewController.latestVersion) is available at automne.fetchdev.host/release")
-                                self.tprint("")
                             }
                         } else {
                             self.tprint("ERROR10: No tracks/broken frequency")
@@ -814,7 +825,6 @@ class ViewController: NSViewController{
     
     @objc func mainDisplayTick(){
         if ViewController.systemStatus == .playing || ViewController.systemStatus == .paused{
-            TBLabel.stringValue = ViewController.description
             let fi = ViewController.states.firstIndex(of: ViewController.mainDisplayState) ?? 0
             ViewController.mainDisplayState =
                 ViewController.states[fi == ViewController.states.count - 1 ? 0 : fi + 1]
@@ -834,14 +844,29 @@ class ViewController: NSViewController{
     }
     
     ///Terminal
-    func tclear(){
+    func tclear(cache: Bool = false){
+        cache ? ViewController.terminalCache = terminal.stringValue : ()
         hideImage()
         terminal.stringValue = ""
     }
-    func tprint(_ item: String, raw: Bool = false, noBreak: Bool = false){
+    func trestore(){
         hideImage()
+        if ViewController.terminalCache != "" { terminal.stringValue = ViewController.terminalCache }
+    }
+    func tprint(_ item: String, raw: Bool = false, noBreak: Bool = false, noWipe: Bool = false){
+        hideImage()
+        let key = raw ? 27 : 25
+        if item.count > key && !noBreak{
+            var s = item
+            for i in 1...item.count / key {
+                s.insert(contentsOf: raw ? "\n" : "\n  ", at: s.index(s.startIndex, offsetBy: i * key))
+            }
+            terminal.stringValue = terminal.stringValue + (raw ? "" : "> ") + s + "\n"
+        } else {
+            terminal.stringValue = terminal.stringValue + (raw ? "" : "> ") + item + "\n"
+        }
         let o = terminal.stringValue.components(separatedBy: .newlines)
-        if o.count > 10{
+        if o.count > 10 && !noWipe{
             var n = ""
             for s in 5...o.count - 2{
                 n.append(o[s] + "\n" )
@@ -849,19 +874,13 @@ class ViewController: NSViewController{
             n.append(o[o.count - 1])
             terminal.stringValue = n
         }
-        if item.count > 24 && !noBreak{
-            var s = item
-            s.insert(contentsOf: raw ? "-\n" : "-\n  ", at: s.index(s.startIndex, offsetBy: 24))
-            terminal.stringValue = terminal.stringValue + (raw ? "" : "> ") + s + "\n"
-        } else {
-            terminal.stringValue = terminal.stringValue + (raw ? "" : "> ") + item + "\n"
-        }
     }
     func getData(from url: URL, completion: @escaping (Data?, URLResponse?, Error?) -> ()) {
         URLSession.shared.dataTask(with: url, completionHandler: completion).resume()
     }
     @objc func toggleImage(){
-        if ViewController.systemStatus == .paused || ViewController.systemStatus == .playing {
+        if (ViewController.systemStatus == .paused || ViewController.systemStatus == .playing)
+        && ViewController.defaults.integer(forKey: "artwork") != 0{
             terminalImage.isHidden = false
         }
         else{
@@ -882,6 +901,24 @@ class ViewController: NSViewController{
     func removeImage(){
         terminalImage.isHidden = true
         ViewController.terminalImageTimer?.invalidate()
+    }
+    func checkAndInvokeImage(){
+        switch ViewController.defaults.integer(forKey: "artwork") {
+        case 1:
+            if ViewController.playableQueue[ViewController.playbackIndex].artwork_url != nil{
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    self.invokeImage(from: URL(string: ((ViewController.playableQueue[ViewController.playbackIndex].artwork_url)?.replacingOccurrences(of: "large", with: "t500x500"))!)!)
+                }
+            }
+        case 2:
+            if ViewController.playlistArtwork != "" && !ViewController.playlistArtworkServed{
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    self.invokeImage(from: URL(string: ViewController.playlistArtwork.replacingOccurrences(of: "large", with: "t500x500"))!)
+                    ViewController.playlistArtworkServed = true
+                }
+            }
+        default: ()
+        }
     }
     func invokeImage(from url: URL) {
         getData(from: url) { data, response, error in
