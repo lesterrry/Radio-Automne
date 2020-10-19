@@ -230,6 +230,7 @@ class ViewController: NSViewController{
     static var latestVersion = ""
     static var TSBP = 0
     static var terminalCache = ""
+    static var isPlayerWaiting = false
     
     //*********************************************************************
     //CONSTS
@@ -855,9 +856,15 @@ class ViewController: NSViewController{
             default: ()
             }
         }
-        if ViewController.player.reasonForWaitingToPlay != nil{
-            tprint("WARN: " + ViewController.player.reasonForWaitingToPlay!.rawValue)
-            tprint("TRY REBOOTING")
+        if ViewController.player.reasonForWaitingToPlay != nil {
+            if ViewController.isPlayerWaiting{
+                tprint("WARN: " + ViewController.player.reasonForWaitingToPlay!.rawValue)
+                tprint("TRY REBOOTING")
+            }else{
+                ViewController.isPlayerWaiting = true
+            }
+        }else{
+            ViewController.isPlayerWaiting = false
         }
     }
     
