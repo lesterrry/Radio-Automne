@@ -242,7 +242,7 @@ class ViewController: NSViewController{
     //*********************************************************************
     //FUNCTIONS
     //*********************************************************************
-
+    
     override func viewDidAppear() {
         super.viewDidAppear()
         touchBar = bar
@@ -369,8 +369,8 @@ class ViewController: NSViewController{
         if ViewController.smenu.elements[3].value != 0 && ViewController.systemStatus == .playing{
             ViewController.sleepTimer = Timer.scheduledTimer(
                 timeInterval: TimeInterval(ViewController.smenu.elements[3].value * 600),
-            target: self,
-            selector: #selector(self.sleep), userInfo: nil, repeats: false)
+                target: self,
+                selector: #selector(self.sleep), userInfo: nil, repeats: false)
         }
         checkAndInvokeImage()
     }
@@ -611,7 +611,7 @@ class ViewController: NSViewController{
         ViewController.playbackIndex = from
         let track = ViewController.playableQueue[from]
         let url = URL(string: track.stream_url!
-                        + AutomneAxioms.SCTailQueue + AutomneKeys.scKey)
+            + AutomneAxioms.SCTailQueue + AutomneKeys.scKey)
         ViewController.player = AVPlayer(url: url!)
         let playerItem = AVPlayerItem.init(url: url!)
         NotificationCenter.default.addObserver(self, selector: #selector(self.playerDidFinishPlaying(sender:)),
@@ -664,7 +664,7 @@ class ViewController: NSViewController{
         let url = URL(
             string: AutomneAxioms.firstResponderNoseQueue +
                 AutomneKeys.firstResponderKey
-        )!
+            )!
         AF.request(url).response { response in
             switch response.result {
             case .success( _):
@@ -673,7 +673,7 @@ class ViewController: NSViewController{
                     let obj = try decoder.decode(FirstResponderAnswer.self, from: response.data!)
                     AutomneKeys.scKey = obj.scKey!
                     ViewController.retrievedFrequencies = obj.frequencies!
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    let task = {
                         self.switchFrequency(to: ViewController.retrievedFrequencies[0], index: 0)
                         self.tprint("SUCCESS")
                         self.tprint("Retrieved " + String(ViewController.retrievedFrequencies.count) + " frequencies")
@@ -685,6 +685,13 @@ class ViewController: NSViewController{
                             self.setSystemStatus(to: AutomneProperties.SystemStatus.ready)
                             SFX.shutUp()
                         }
+                    }
+                    if ViewController.defaults.integer(forKey: "qboot") == 0{
+                        DispatchQueue.main.asyncAfter(deadline: .now() +  2){
+                            task()
+                        }
+                    } else {
+                        task()
                     }
                 }
                 catch{
@@ -716,7 +723,7 @@ class ViewController: NSViewController{
                 + frequency.playlistID!
                 + AutomneAxioms.SCTailQueue
                 + AutomneKeys.scKey
-        )!
+            )!
         
         AF.request(url).response { response in
             switch response.result {
@@ -724,7 +731,7 @@ class ViewController: NSViewController{
                 do{
                     let decoder = JSONDecoder()
                     let obj = try decoder.decode(Playlist.self, from: response.data!)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    let task = {
                         if obj.tracks != nil{
                             self.fillQueue(with: obj.tracks!)
                             ViewController.description = obj.description ?? "No description"
@@ -756,6 +763,13 @@ class ViewController: NSViewController{
                             self.setSystemStatus(to: AutomneProperties.SystemStatus.error)
                             SFX.shutUp()
                         }
+                    }
+                    if ViewController.defaults.integer(forKey: "qboot") == 0{
+                        DispatchQueue.main.asyncAfter(deadline: .now() +  2){
+                            task()
+                        }
+                    } else {
+                        task()
                     }
                 }
                 catch{
@@ -841,6 +855,10 @@ class ViewController: NSViewController{
             default: ()
             }
         }
+        if ViewController.player.reasonForWaitingToPlay != nil{
+            tprint("WARN: " + ViewController.player.reasonForWaitingToPlay!.rawValue)
+            tprint("TRY REBOOTING")
+        }
     }
     
     ///Terminal
@@ -880,7 +898,7 @@ class ViewController: NSViewController{
     }
     @objc func toggleImage(){
         if (ViewController.systemStatus == .paused || ViewController.systemStatus == .playing)
-        && ViewController.defaults.integer(forKey: "artwork") != 0{
+            && ViewController.defaults.integer(forKey: "artwork") != 0{
             terminalImage.isHidden = false
         }
         else{
