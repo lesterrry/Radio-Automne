@@ -154,6 +154,11 @@ class ViewController: NSViewController{
                         title: "[SOURCE CODE]",
                         value: 0,
                         bounds: (0,1),
+                        isAction: true),
+                    SetupMenu.SetupMenuElement(
+                        title: "[SLEEP TEST]",
+                        value: 0,
+                        bounds: (0,1),
                         isAction: true)]
                 ViewController.smenu = SetupMenu.get(for: els)
                 tclear(cache: true)
@@ -309,24 +314,27 @@ class ViewController: NSViewController{
         hideImage()
         manual.isHidden = true
         if ViewController.inMenu{
-            tclear()
             if event.keyCode == 0x7E //DOWN
             {
+                tclear()
                 ViewController.smenu = ViewController.smenu.downSel()
                 tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
             }
             else if event.keyCode == 0x7D //UP
             {
+                tclear()
                 ViewController.smenu = ViewController.smenu.upSel()
                 tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
             }
             else if event.keyCode == 0x7C //RIGHT
             {
-                ViewController.smenu = ViewController.smenu.increment([{},{},{},{},saveDefaults,sendToGithub])
+                tclear()
+                ViewController.smenu = ViewController.smenu.increment([{},{},{},{},saveDefaults,sendToGithub,AutomneCore.systemSleep])
                 tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
             }
             else if event.keyCode == 0x7B //LEFT
             {
+                tclear()
                 ViewController.smenu = ViewController.smenu.decrement()
                 tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true)
             }
@@ -357,6 +365,7 @@ class ViewController: NSViewController{
     }
     func sendToGithub(){
         NSWorkspace.shared.open(URL(string: "https://github.com/Lesterrry/Radio-Automne")!)
+        ViewController.inMenu = false
     }
     func saveDefaults(){
         ViewController.defaults.set(ViewController.smenu.elements[0].value, forKey: "artwork")
@@ -375,10 +384,13 @@ class ViewController: NSViewController{
                 target: self,
                 selector: #selector(self.sleep), userInfo: nil, repeats: false)
         }
-        checkAndInvokeImage()
+        if ViewController.systemStatus == .paused || ViewController.systemStatus == .playing {
+            checkAndInvokeImage()
+        }
     }
     @objc func sleep(){
         powerOff()
+        AutomneCore.notify(title: "🌌 Good night")
         AutomneCore.systemSleep()
     }
     func powerOn(){
@@ -635,15 +647,10 @@ class ViewController: NSViewController{
             TBLabel.stringValue = ViewController.description
             tprint(" ***", raw: true)
         }else{
-            tprint(AutomneAxioms.messages.randomElement() ?? "Playing...")
-            if !NSApplication.shared.isActive{
-                let notification = NSUserNotification()
-                notification.hasActionButton = false
-                notification.setValue(true, forKey: "_ignoresDoNotDisturb")
-                notification.title = "📻 " + (track.title ?? "Unknown")
-                notification.informativeText = "By " + (track.user?.username ?? "Unknown")
-                NSUserNotificationCenter.default.deliver(notification)
-            }
+            let e = AutomneAxioms.emojis.randomElement()!
+            tprint(e + " " + (AutomneAxioms.messages.randomElement() ?? "Playing..."))
+            AutomneCore.notify(title: e + (track.user?.username ?? "Unknown") + " in our broadcast",
+                               subtitle: (track.title ?? "Unknown"))
             
         }
         setPlaybackControllerState(to: .loading)
@@ -718,6 +725,7 @@ class ViewController: NSViewController{
                         ViewController.frequencyMessage = obj.message ?? "No message"
                         ViewController.latestVersion = obj.version ?? ""
                         self.setSystemStatus(to: .unset)
+                        self.TBLabel.stringValue = "Please select frequency"
                         SFX.shutUp()
                     }
                     if ViewController.defaults.integer(forKey: "qboot") == 0{
@@ -789,7 +797,7 @@ class ViewController: NSViewController{
                                 self.tprint("***", raw: true)
                                 ViewController.defaults.set(2, forKey: "artwork")
                             }
-                            if ViewController.latestVersion != self.appVersion && !(self.appVersion?.contains("b"))!{
+                            if ViewController.latestVersion != self.appVersion && !(self.appVersion?.contains("beta"))!{
                                 self.tprint("ATTENTION: Latest version v\(ViewController.latestVersion) is available at automne.fetchdev.host/release")
                             }
                         } else {
