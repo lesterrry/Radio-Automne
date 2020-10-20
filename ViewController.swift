@@ -114,6 +114,9 @@ class ViewController: NSViewController{
         else if ViewController.systemStatus == .paused {
             resume()
         }
+        else if ViewController.systemStatus == .unset {
+            tprint("Frequency unset")
+        }
     }
     @IBAction func setupClicked(_ sender: Any) {
         if ViewController.systemStatus != .busy{
@@ -216,11 +219,12 @@ class ViewController: NSViewController{
     static var retrievedFrequencies: [AutomneProperties.Frequency] = []
     static var `repeat` = false;
     static var ticker: Timer!
-    static var pauseLightBlinkTimer: Timer!
+    static var playLightBlinkTimer: Timer!
     static var mainDisplaySwitchTimer: Timer!
     static var sleepTimer: Timer!
     static var longTicker: Timer!
     static var terminalImageTimer: Timer!
+    static var playerWaitingTimeoutTimer: Timer!
     static var volumeKnobAngle: CGFloat = 0.0
     static var savedVolume = -1
     static var firstCall = true
@@ -230,7 +234,6 @@ class ViewController: NSViewController{
     static var latestVersion = ""
     static var TSBP = 0
     static var terminalCache = ""
-    static var isPlayerWaiting = false
     
     //*********************************************************************
     //CONSTS
@@ -243,7 +246,6 @@ class ViewController: NSViewController{
     //*********************************************************************
     //FUNCTIONS
     //*********************************************************************
-    
     override func viewDidAppear() {
         super.viewDidAppear()
         touchBar = bar
@@ -417,7 +419,7 @@ class ViewController: NSViewController{
                 self.tprint(self.fetchLogo, raw: true, noBreak: true)
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 12) {
-                self.retrieveFrequencies(initial: true)
+                self.retrieveFrequencies()
             }
         } else{
             SFX.playSFX(sfx: SFX.Effects.buttonClick)
@@ -426,7 +428,7 @@ class ViewController: NSViewController{
                     light.isHidden = true
                 }
                 self.tprint("[QUICK BOOT]")
-                self.retrieveFrequencies(initial: true)
+                self.retrieveFrequencies()
             }
         }
     }
@@ -443,7 +445,7 @@ class ViewController: NSViewController{
         for light in allLights{
             light.isHidden = true
         }
-        ViewController.pauseLightBlinkTimer?.invalidate()
+        ViewController.playLightBlinkTimer?.invalidate()
         terminal.stringValue = ""
         ViewController.inMenu = false
     }
@@ -489,9 +491,15 @@ class ViewController: NSViewController{
     func setSystemStatus(to: AutomneProperties.SystemStatus){
         ViewController.systemStatus = to
         switch to {
-        case .playing, .ready, .paused:
+        case .playing, .ready, .paused, .unset:
             statusLight.image = NSImage.init(named: "StatusLight_ready")
             TBStatusLight.image = NSImage.init(named: "StatusLight_ready")
+        case .error:
+            statusLight.image = NSImage.init(named: "StatusLight_error")
+            TBStatusLight.image = NSImage.init(named: "StatusLight_error")
+            setFreqLabel(to: "ERR")
+            setPlaybackLabel(to: "ERR")
+            TBLabel.stringValue = "ERROR"
         default:
             statusLight.image = NSImage.init(named: "StatusLight_" + to.rawValue)
             TBStatusLight.image = NSImage.init(named: "StatusLight_" + to.rawValue)
@@ -532,39 +540,59 @@ class ViewController: NSViewController{
             playbackControllerLight_play.isHidden = false
             if ViewController.sleepTimer != nil && ViewController.sleepTimer.isValid{
                 playbackControllerLight_sleep.isHidden = false }
+            if ViewController.player.reasonForWaitingToPlay != nil{
+                playbackControllerLight_loading.isHidden = false
+                if ViewController.playerWaitingTimeoutTimer == nil
+                    || !ViewController.playerWaitingTimeoutTimer.isValid{
+                    ViewController.playerWaitingTimeoutTimer = Timer.scheduledTimer(timeInterval: 10.0, target: self, selector: #selector(self.playerWaitingTimeout), userInfo: nil, repeats: false)
+                }
+            }else{
+                playbackControllerLight_loading.isHidden = true
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 self.playbackControllerLight_play.isHidden = true
                 self.playbackControllerLight_sleep.isHidden = true
             }
         }
+        else{
+            ViewController.playLightBlinkTimer?.invalidate()
+        }
+    }
+    @objc func playerWaitingTimeout(){
+        let r = ViewController.player.reasonForWaitingToPlay
+        if r != nil{
+            setPlaybackControllerState(to: .error)
+            setSystemStatus(to: .ready)
+            tprint("ERR11: " + r!.rawValue)
+            ViewController.player.pause()
+        }
     }
     func setPlaybackControllerState(to: PlaybackControllerState){
         switch to {
         case .playing:
-            ViewController.pauseLightBlinkTimer = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(self.checkPlayLight), userInfo: nil, repeats: true)
+            ViewController.playLightBlinkTimer = Timer.scheduledTimer(timeInterval: 2.0, target: self, selector: #selector(self.checkPlayLight), userInfo: nil, repeats: true)
             playbackControllerLight_pause.isHidden = true
-            playbackControllerLight_loading.isHidden = true
             playbackControllerLight_error.isHidden = true
         case .paused:
-            ViewController.pauseLightBlinkTimer?.invalidate()
+            ViewController.playLightBlinkTimer?.invalidate()
             playbackControllerLight_play.isHidden = true
             playbackControllerLight_pause.isHidden = false
             playbackControllerLight_loading.isHidden = true
             playbackControllerLight_error.isHidden = true
         case .loading:
-            ViewController.pauseLightBlinkTimer?.invalidate()
+            ViewController.playLightBlinkTimer?.invalidate()
             playbackControllerLight_play.isHidden = true
             playbackControllerLight_pause.isHidden = true
             playbackControllerLight_loading.isHidden = false
             playbackControllerLight_error.isHidden = true
         case .error:
-            ViewController.pauseLightBlinkTimer?.invalidate()
+            ViewController.playLightBlinkTimer?.invalidate()
             playbackControllerLight_play.isHidden = true
             playbackControllerLight_pause.isHidden = true
             playbackControllerLight_loading.isHidden = true
             playbackControllerLight_error.isHidden = false
         case .none:
-            ViewController.pauseLightBlinkTimer?.invalidate()
+            ViewController.playLightBlinkTimer?.invalidate()
             playbackControllerLight_play.isHidden = true
             playbackControllerLight_pause.isHidden = true
             playbackControllerLight_loading.isHidden = true
@@ -597,6 +625,7 @@ class ViewController: NSViewController{
         }
     }
     func play(from: Int = 0, init: Bool = false){
+        let track = ViewController.playableQueue[from]
         if `init`{
             tclear()
             tprint("", raw: true)
@@ -607,10 +636,18 @@ class ViewController: NSViewController{
             tprint(" ***", raw: true)
         }else{
             tprint(AutomneAxioms.messages.randomElement() ?? "Playing...")
+            if !NSApplication.shared.isActive{
+                let notification = NSUserNotification()
+                notification.hasActionButton = false
+                notification.setValue(true, forKey: "_ignoresDoNotDisturb")
+                notification.title = "📻 " + (track.title ?? "Unknown")
+                notification.informativeText = "By " + (track.user?.username ?? "Unknown")
+                NSUserNotificationCenter.default.deliver(notification)
+            }
+            
         }
         setPlaybackControllerState(to: .loading)
         ViewController.playbackIndex = from
-        let track = ViewController.playableQueue[from]
         let url = URL(string: track.stream_url!
             + AutomneAxioms.SCTailQueue + AutomneKeys.scKey)
         ViewController.player = AVPlayer(url: url!)
@@ -655,7 +692,7 @@ class ViewController: NSViewController{
     }
     
     ///API
-    func retrieveFrequencies(initial: Bool = false){
+    func retrieveFrequencies(){
         SFX.playSFX(sfx: SFX.Effects.radioSetup)
         tprint("Connecting to First Responder...")
         setFreqLabel(to: "Retrieving...")
@@ -680,12 +717,8 @@ class ViewController: NSViewController{
                         self.tprint("Retrieved " + String(ViewController.retrievedFrequencies.count) + " frequencies")
                         ViewController.frequencyMessage = obj.message ?? "No message"
                         ViewController.latestVersion = obj.version ?? ""
-                        if(initial){
-                            self.retrieveTracks(frequency: ViewController.selectedFrequency!, initial: true)
-                        }else{
-                            self.setSystemStatus(to: AutomneProperties.SystemStatus.ready)
-                            SFX.shutUp()
-                        }
+                        self.setSystemStatus(to: .unset)
+                        SFX.shutUp()
                     }
                     if ViewController.defaults.integer(forKey: "qboot") == 0{
                         DispatchQueue.main.asyncAfter(deadline: .now() +  2){
@@ -709,12 +742,12 @@ class ViewController: NSViewController{
         }
     }
     
-    func retrieveTracks(frequency: AutomneProperties.Frequency, initial: Bool = false){
+    func retrieveTracks(frequency: AutomneProperties.Frequency){
         ViewController.sleepTimer?.invalidate()
         setPlaybackLabel(to: ". . . . .")
         TBLabel.stringValue = ". . . . ."
         setFreqLight(to: .tuning, new: frequency.isNew!)
-        if !initial { SFX.playSFX(sfx: SFX.Effects.radioSetup) }
+        SFX.playSFX(sfx: SFX.Effects.radioSetup)
         setSystemStatus(to: AutomneProperties.SystemStatus.busy)
         setPlaybackControllerState(to: .none)
         tprint("Retrieving audio data...")
@@ -756,7 +789,7 @@ class ViewController: NSViewController{
                                 self.tprint("***", raw: true)
                                 ViewController.defaults.set(2, forKey: "artwork")
                             }
-                            if ViewController.latestVersion != self.appVersion{
+                            if ViewController.latestVersion != self.appVersion && !(self.appVersion?.contains("b"))!{
                                 self.tprint("ATTENTION: Latest version v\(ViewController.latestVersion) is available at automne.fetchdev.host/release")
                             }
                         } else {
@@ -855,16 +888,6 @@ class ViewController: NSViewController{
                 setPlaybackLabel(to: ViewController.retrievedFrequencies[ViewController.setFrequencyIndex].name ?? "Unknown station")
             default: ()
             }
-        }
-        if ViewController.player.reasonForWaitingToPlay != nil {
-            if ViewController.isPlayerWaiting{
-                tprint("WARN: " + ViewController.player.reasonForWaitingToPlay!.rawValue)
-                tprint("TRY REBOOTING")
-            }else{
-                ViewController.isPlayerWaiting = true
-            }
-        }else{
-            ViewController.isPlayerWaiting = false
         }
     }
     
