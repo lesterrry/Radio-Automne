@@ -13,6 +13,7 @@ class AutomneAxioms{
     public static let SCPlaylistQueue = "playlists/"
     public static let SCTailQueue = "?client_id="
     
+    public static let emojis = ["📡", "🎛", "🎚", "🎙", "📻", "📀", "💿", "💽", "🌌", "🎹", "🎧", "🎤", "🍂", "🍁", "🦗", "🌤", "🦊", "🎃", "🌲", "🥘", "🚲", "🚉", "🏕", "🛤", "🗺"]
     public static var messages = ["You are loved.",
                                   "You are not alone.",
                                   "Я не помню, как я оказался в лесу",
@@ -47,5 +48,11 @@ class AutomneAxioms{
                                   "I'll tell you, Fenn, i'll tell you, when",
                                   "It's now",
                                   "I love you.",
-                                  "You're always welcome to Pokrovka Dacha"]
+                                  "You're always welcome to Pokrovka Dacha",
+                                  "You are valid",
+                                  "Все в порядке, все пройдет",
+                                  "Утро которым мы умрем",
+                                  "You, you feel like Oxford blood",
+                                  "Where goes that path through the woods?",
+                                  "There goes our love again"]
 }
