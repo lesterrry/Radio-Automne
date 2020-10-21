@@ -2,11 +2,17 @@
 World wide web audio receiving machine
 
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
-[![Release](https://img.shields.io/badge/latest%20release-v0.3.1-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
+[![Release](https://img.shields.io/badge/latest%20release-v0.4.0%20Borzoi-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 [![SoundCloud](https://img.shields.io/badge/SoundCloud-listen-9cf?style=social&logo=soundcloud)](https://soundcloud.com/lesterrry)
-![Screenshot](https://github.com/Lesterrry/Radio-Automne/blob/main/screeens/Main.gif)
+![Screenshot](https://github.com/Lesterrry/Radio-Automne/screeens/Main.gif)
+## What is it?
+Radio Automne is an internet-radio client, wrapped in beautiful user interface. It provides such features, as:
+- Automatic frequency fetching, configuring and setting up
+- DeepWave: smart track lookup add-on, providing ultimate tailor-made playback experiencee
+- Sleep timer: when time's up, player will pause and your Mac will enter sleep mode
+- Multiple appearances available
 ## User manual
 ### 1. Applying power
 Power is applied by pressing the ON/STANDBY button. Machine immediately starts booting and retrieving available frequencies.
@@ -31,6 +37,7 @@ Setting keys:
 | Setting | Keys |
 | ------ | ------ |
 | Display artwork | 0 - do not display, 1 – display track artwork, 2 – display playlist artwork |
-| Appearance | 1 - House in the Woods, 2 - Hi-Fi Black, 3 - Lost in Belize |
+| Appearance | 1 - House in the Woods, 2 - Hi-Fi Black, 3 - Lost in Belize, 4 – Snow-white marble, 5 – Japanese High-End, 6 – Soviet Wooden |
 | Quick Boot | 0 - off, 1 - on |
 | Sleep Timer | 1 = 10 mins, 9 = 90 mins |
+| DeepWave | 0 - off, 1 - on |
