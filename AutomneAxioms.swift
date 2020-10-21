@@ -11,12 +11,14 @@ class AutomneAxioms{
     public static let firstResponderNoseQueue = "https://automne.fetchdev.host/get.php?key="
     public static let SCNoseQueue = "https://api.soundcloud.com/"
     public static let SCPlaylistQueue = "playlists/"
+    public static let SCDeepWaveQueue = "/related"
     public static let SCTailQueue = "?client_id="
     
     public static let emojis = ["📡", "🎛", "🎚", "🎙", "📻", "📀", "💿", "💽", "🌌", "🎹", "🎧", "🎤", "🍂", "🍁", "🦗", "🌤", "🦊", "🎃", "🌲", "🥘", "🚲", "🚉", "🏕", "🛤", "🗺"]
     public static var messages = ["You are loved.",
                                   "You are not alone.",
                                   "Я не помню, как я оказался в лесу",
+                                  "These are my friends",
                                   "Leaves are always yellow, but never brown in Golovkovo",
                                   "Smash the government",
                                   "You always have a chance.",
@@ -27,6 +29,10 @@ class AutomneAxioms{
                                   "At every occasion, i'll be ready for the funeral",
                                   "To see age in a flower, the dawns are speeding up",
                                   "Life's alright in devil town",
+                                  "Увидимся в Лапшичной",
+                                  "В Хижине на Холме чай пахнет ёлками",
+                                  "Не бросайте своих собак",
+                                  "Ветер воет в форточках Полустанка",
                                   "Why would dogs avoid these hills?",
                                   "@phvkha is the best photographer i've ever known",
                                   "You're welcome anytime in my dreams",
@@ -54,5 +60,14 @@ class AutomneAxioms{
                                   "Утро которым мы умрем",
                                   "You, you feel like Oxford blood",
                                   "Where goes that path through the woods?",
-                                  "There goes our love again"]
+                                  "There goes our love again",
+                                  "Я встречусь с тобой осенью восьмого класса",
+                                  "Born in Possum Springs",
+                                  "R.I.P. Grandma",
+                                  "R.I.P. Alec",
+                                  "Ew a furry",
+                                  "Caring is the coolest thing I've seen anyone do.",
+                                  "It was a nice holiday without you",
+                                  "And it's called jazz",
+                                  "It's the colours you have, no need to be sad"]
 }

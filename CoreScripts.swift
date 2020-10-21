@@ -8,6 +8,7 @@
 
 import Foundation
 import AudioToolbox
+import Cocoa
 
 class AutomneCore {
     private static let volurl = Bundle.main.url(forResource: "GetVolume", withExtension: "scpt")
@@ -33,6 +34,16 @@ class AutomneCore {
             
         } else if (slerror != nil) {
             print("ERROR9: " + slerror!.description)
+        }
+    }
+    public static func notify(title: String, subtitle: String = ""){
+        if !NSApplication.shared.isActive{
+            let notification = NSUserNotification()
+            notification.hasActionButton = false
+            notification.setValue(true, forKey: "_ignoresDoNotDisturb")
+            notification.title = title
+            notification.informativeText = subtitle
+            NSUserNotificationCenter.default.deliver(notification)
         }
     }
 }

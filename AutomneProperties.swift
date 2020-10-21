@@ -15,6 +15,7 @@ public class AutomneProperties{
         case standby
         case paused
         case playing
+        case unset
     }
     
     public struct Frequency: Codable {

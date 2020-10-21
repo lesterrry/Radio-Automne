@@ -23,6 +23,9 @@
                                                 <action selector="orderFrontStandardAboutPanel:" target="Ady-hI-5gd" id="Exp-CZ-Vem"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="By @lesterrry" enabled="NO" id="NCg-3S-XFx">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="VOq-y0-SEH"/>
                                         <menuItem title="Hide Radio Automne" keyEquivalent="h" id="Olw-nP-bQN">
                                             <connections>
@@ -45,25 +48,6 @@
                                         <menuItem title="Quit Radio Automne" keyEquivalent="q" id="4sb-4s-VLi">
                                             <connections>
                                                 <action selector="terminate:" target="Ady-hI-5gd" id="Te7-pn-YzF"/>
-                                            </connections>
-                                        </menuItem>
-                                    </items>
-                                </menu>
-                            </menuItem>
-                            <menuItem title="Window" id="aUF-d1-5bR">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <menu key="submenu" title="Window" systemMenu="window" id="Td7-aD-5lo">
-                                    <items>
-                                        <menuItem title="Minimize" keyEquivalent="m" id="OY7-WF-poV">
-                                            <connections>
-                                                <action selector="performMiniaturize:" target="Ady-hI-5gd" id="VwT-WD-YPe"/>
-                                            </connections>
-                                        </menuItem>
-                                        <menuItem isSeparatorItem="YES" id="eu3-7i-yIM"/>
-                                        <menuItem title="Bring All to Front" id="LE2-aR-0XJ">
-                                            <modifierMask key="keyEquivalentModifierMask"/>
-                                            <connections>
-                                                <action selector="arrangeInFront:" target="Ady-hI-5gd" id="DRN-fu-gQh"/>
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -310,10 +294,18 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="PlaybackContLight_error" id="0P2-4o-20y"/>
                             </imageView>
-                            <imageView hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="x4p-Pu-n7g" userLabel="PlaybackContLight_error">
+                            <imageView hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="x4p-Pu-n7g" userLabel="PlaybackContLight_sleep">
                                 <rect key="frame" x="463" y="281" width="88" height="66"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="PlaybackContLight_sleep" id="xJS-hh-Bdf"/>
+                            </imageView>
+                            <imageView hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="rAu-uq-pJd" userLabel="PlaybackContLight_deepwave">
+                                <rect key="frame" x="512" y="274" width="111" height="74"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="74" id="2JB-4q-OYy"/>
+                                    <constraint firstAttribute="width" constant="111" id="4YI-Ki-zqo"/>
+                                </constraints>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="PlaybackContLight_deepwave" id="6qy-c4-Ew9"/>
                             </imageView>
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mO4-tG-IzA" userLabel="SetupButton">
                                 <rect key="frame" x="301" y="39" width="87" height="44"/>
@@ -345,9 +337,13 @@
                         </subviews>
                         <constraints>
                             <constraint firstItem="aBV-86-dfJ" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="50" id="8if-cq-CFC"/>
+                            <constraint firstItem="rAu-uq-pJd" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="62" id="L71-lT-1Lh"/>
                             <constraint firstAttribute="trailing" secondItem="aBV-86-dfJ" secondAttribute="trailing" constant="688" id="PNT-nf-ATR"/>
                             <constraint firstItem="aBV-86-dfJ" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="76" id="Y9L-pC-sxX"/>
                             <constraint firstAttribute="bottom" secondItem="aBV-86-dfJ" secondAttribute="bottom" constant="319" id="Z1O-1I-bzd"/>
+                            <constraint firstAttribute="trailing" secondItem="rAu-uq-pJd" secondAttribute="trailing" constant="311" id="bbj-h2-cr3"/>
+                            <constraint firstItem="rAu-uq-pJd" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="512" id="fAk-fu-N4c"/>
+                            <constraint firstAttribute="bottom" secondItem="rAu-uq-pJd" secondAttribute="bottom" constant="274" id="xbI-KG-PrG"/>
                         </constraints>
                     </view>
                     <connections>
@@ -361,6 +357,7 @@
                         <outlet property="glitchStripe" destination="R31-XN-wg3" id="4mI-EJ-Mcn"/>
                         <outlet property="mainLabel" destination="Zjg-Xw-G1T" id="wV4-Y6-bMy"/>
                         <outlet property="manual" destination="Fqq-Db-J6M" id="PD1-1D-ac3"/>
+                        <outlet property="playbackControllerLight_deepwave" destination="rAu-uq-pJd" id="5or-Zf-Lws"/>
                         <outlet property="playbackControllerLight_error" destination="LLb-WQ-0Vn" id="SG8-Gk-Kj9"/>
                         <outlet property="playbackControllerLight_loading" destination="tJe-uM-7BO" id="sMB-MG-gmU"/>
                         <outlet property="playbackControllerLight_pause" destination="zhb-n7-Obz" id="cHL-VI-GTV"/>
@@ -429,6 +426,7 @@
         <image name="FreqContLight_new" width="137" height="66.5"/>
         <image name="FreqContLight_tuned" width="195.5" height="152.5"/>
         <image name="Manual" width="2064.5" height="900"/>
+        <image name="PlaybackContLight_deepwave" width="343" height="266"/>
         <image name="PlaybackContLight_error" width="143.5" height="105"/>
         <image name="PlaybackContLight_loading" width="169" height="91"/>
         <image name="PlaybackContLight_pause" width="103.5" height="97"/>
