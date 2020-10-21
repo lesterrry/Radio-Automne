@@ -725,12 +725,9 @@ class ViewController: NSViewController{
                     let decoder = JSONDecoder()
                     var obj = try decoder.decode([Tracks].self, from: response.data!)
                     for i in 0..<obj.count{
-                        if ViewController.playableQueue.contains(obj[i]){
-                            obj.remove(at: i)
-                        }else{
                         obj[i].deepWave = true
-                        }
                     }
+                    obj = AutomneAxioms.uniq(source: obj)
                     self.fillQueue(with: obj, append: true)
                     self.tprint(String(obj.count) + " tracks by DeepWave")
                 }
@@ -839,7 +836,7 @@ class ViewController: NSViewController{
                         let def = (ViewController.defaults.integer(forKey: "deepwave") == 0 ? false : true)
                         if obj.tracks != nil{
                             self.tprint("SUCCESS")
-                            self.fillQueue(with: obj.tracks!, shuffle: def)
+                            self.fillQueue(with: obj.tracks!, shuffle: !def)
                             if def { self.initDeepwave(with: obj.tracks!.randomElement()!) }
                             ViewController.description = obj.description ?? "No description"
                             ViewController.playlistArtwork = obj.artwork_url ?? ""
