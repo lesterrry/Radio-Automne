@@ -134,7 +134,7 @@ class ViewController: NSViewController{
                     SetupMenu.SetupMenuElement(
                         title: "Appearance",
                         value: (ViewController.defaults.integer(forKey: "appearance") == 0 ? 1 : ViewController.defaults.integer(forKey: "appearance")),
-                        bounds: (1,4),
+                        bounds: (1,6),
                         isAction: false),
                     SetupMenu.SetupMenuElement(
                         title: "Quick boot",
@@ -311,6 +311,14 @@ class ViewController: NSViewController{
             volumeKnob.image = NSImage.init(named: "VolumeKnob_3")
             box.image = NSImage.init(named: "Box_4")
             standbyButton.image = NSImage.init(named: "OnStandby_3")
+        case 5:
+            volumeKnob.image = NSImage.init(named: "VolumeKnob_3")
+            box.image = NSImage.init(named: "Box_5")
+            standbyButton.image = NSImage.init(named: "OnStandby_5")
+        case 6:
+            volumeKnob.image = NSImage.init(named: "VolumeKnob_6")
+            box.image = NSImage.init(named: "Box_6")
+            standbyButton.image = NSImage.init(named: "OnStandby_6")
         default: ()
         }
     }
@@ -661,7 +669,7 @@ class ViewController: NSViewController{
             tprint(" ***", raw: true)
         }else{
             let e = AutomneAxioms.emojis.randomElement()!
-            tprint(e + " " + (AutomneAxioms.messages.randomElement() ?? "Playing..."), addBreak: true)
+            tprint(e + " " + (AutomneAxioms.messages.randomElement() ?? "Playing..."), raw: true, addBreak: true)
             AutomneCore.notify(title: e + (track.user?.username ?? "Unknown") + " in our broadcast",
                                subtitle: (track.deepWave! ? "🌀 " : "") + (track.title ?? "Unknown"))
             
@@ -955,7 +963,7 @@ class ViewController: NSViewController{
     }
     func tprint(_ item: String, raw: Bool = false, noBreak: Bool = false, noWipe: Bool = false, addBreak: Bool = false){
         hideImage()
-        let key = raw ? 27 : 25
+        let key = raw ? 26 : 25
         if item.count > key && !noBreak{
             var s = item
             for i in 1...item.count / key {
