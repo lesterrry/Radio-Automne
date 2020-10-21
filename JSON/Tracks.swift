@@ -12,7 +12,12 @@ For support, please feel free to contact me at https://www.linkedin.com/in/syeda
 */
 
 import Foundation
-struct Tracks : Codable {
+struct Tracks : Codable, Equatable {
+    static func == (lhs: Tracks, rhs: Tracks) -> Bool {
+        return rhs.id == lhs.id
+    }
+    
+    var deepWave : Bool?
 	let kind : String?
 	let id : Int?
 	let created_at : String?
@@ -182,6 +187,7 @@ struct Tracks : Codable {
 		reposts_count = try values.decodeIfPresent(Int.self, forKey: .reposts_count)
 		downloadable = try values.decodeIfPresent(Bool.self, forKey: .downloadable)
 		downloads_remaining = try values.decodeIfPresent(Int.self, forKey: .downloads_remaining)
+        deepWave = false
 	}
 
 }
