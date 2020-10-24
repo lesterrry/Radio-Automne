@@ -23,6 +23,7 @@ class ViewController: NSViewController{
     //SYSTEM
     //*********************************************************************
     static var systemStatus = AutomneProperties.SystemStatus.standby
+    static let VERSION_NAME = "Borzoi"
     
     //*********************************************************************
     //OUTLETS
@@ -200,7 +201,7 @@ class ViewController: NSViewController{
             SFX.playSFX(sfx: SFX.Effects.buttonClick)
         }
         if ViewController.systemStatus == .playing || ViewController.systemStatus == .paused{
-            NSWorkspace.shared.open(URL(string: ViewController.playableQueue[ViewController.playbackIndex].permalink_url!)!)
+            NSWorkspace.shared.open(URL(string: ViewController.currentTrack!.permalink_url!)!)
         }
     }
     @IBAction func repeatClicked(_ sender: Any) {
@@ -243,6 +244,7 @@ class ViewController: NSViewController{
     static var description: String = ""
     static var TSBP = 0
     static var terminalCache = ""
+    static var currentTrack: Tracks? = nil
     
     //*********************************************************************
     //CONSTS
@@ -384,7 +386,21 @@ class ViewController: NSViewController{
         ViewController.defaults.set(ViewController.smenu.elements[0].value, forKey: "artwork")
         ViewController.defaults.set(ViewController.smenu.elements[1].value, forKey: "appearance")
         ViewController.defaults.set(ViewController.smenu.elements[2].value, forKey: "qboot")
-        ViewController.defaults.set(ViewController.smenu.elements[4].value, forKey: "deepwave")
+        let v = ViewController.smenu.elements[4].value
+        if ViewController.defaults.integer(forKey: "deepwave") != v{
+            if v == 1{
+                self.initDeepwave(with: ViewController.currentTrack!)
+            }else{
+                var npq: [Tracks] = []
+                for i in ViewController.playableQueue{
+                    if !(i.deepWave ?? false){
+                        npq.append(i)
+                    }
+                }
+                ViewController.playableQueue = npq
+            }
+            ViewController.defaults.set(v, forKey: "deepwave")
+        }
         ViewController.inMenu = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
             self.trestore()
@@ -411,11 +427,11 @@ class ViewController: NSViewController{
         for light in allLights {
             light.isHidden = false
         }
-        tprint("Booting AutomneOS", raw: true)
-        tprint("v" + (appVersion ?? "?") + "...", raw: true)
+        tprint("AutomneOS \(ViewController.VERSION_NAME)", raw: true)
+        tprint(appVersion ?? "")
         glitchStripe.isHidden = false
         setSystemStatus(to: AutomneProperties.SystemStatus.busy)
-        TBLabel.stringValue = "Booting..."
+        TBLabel.stringValue = "AutomneOS " + ViewController.VERSION_NAME
         
         if ViewController.defaults.integer(forKey: "qboot") == 0{
             SFX.playSFX(sfx: SFX.Effects.powerOn)
@@ -460,6 +476,7 @@ class ViewController: NSViewController{
     }
     
     func powerOff(){
+        ViewController.player = AVPlayer()
         TBLabel.stringValue = ""
         glitchStripe.isHidden = true
         removeImage()
@@ -499,7 +516,7 @@ class ViewController: NSViewController{
         if (ViewController.systemStatus == .playing || ViewController.systemStatus == .paused)
             && ViewController.mainDisplayState == .time{
             let sec = Int(ViewController.player.currentTime().seconds)
-            let dur = (ViewController.playableQueue[ViewController.playbackIndex].duration ?? 600000) / 1000
+            let dur = (ViewController.currentTrack!.duration ?? 600000) / 1000
             let val = dur - sec
             let pSec = val % 60
             
@@ -565,8 +582,15 @@ class ViewController: NSViewController{
     @objc func checkPlayLight(){
         if ViewController.systemStatus == .playing{
             playbackControllerLight_play.isHidden = false
+            if ViewController.currentTrack!.deepWave ?? false{
+                playbackControllerLight_deepwave.isHidden = false
+            }
             if ViewController.sleepTimer != nil && ViewController.sleepTimer.isValid{
-                playbackControllerLight_sleep.isHidden = false }
+                playbackControllerLight_sleep.isHidden = false
+            }
+            else{
+                playbackControllerLight_sleep.isHidden = true
+            }
             if ViewController.player.reasonForWaitingToPlay != nil{
                 playbackControllerLight_loading.isHidden = false
                 if ViewController.playerWaitingTimeoutTimer == nil
@@ -578,7 +602,7 @@ class ViewController: NSViewController{
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 self.playbackControllerLight_play.isHidden = true
-                self.playbackControllerLight_sleep.isHidden = true
+                self.playbackControllerLight_deepwave.isHidden = true
             }
         }
         else{
@@ -659,6 +683,7 @@ class ViewController: NSViewController{
     }
     func play(from: Int = 0, init: Bool = false){
         let track = ViewController.playableQueue[from]
+        ViewController.currentTrack = track
         if `init`{
             tclear()
             tprint("", raw: true)
@@ -938,10 +963,10 @@ class ViewController: NSViewController{
                 ViewController.states[fi == ViewController.states.count - 1 ? 0 : fi + 1]
             switch ViewController.mainDisplayState {
             case .song:
-                setPlaybackLabel(to: ViewController.playableQueue[ViewController.playbackIndex].title ?? "Unknown title")
+                setPlaybackLabel(to: ViewController.currentTrack!.title ?? "Unknown title")
             case .artist:
                 setPlaybackLabel(to: "By " +
-                    (ViewController.playableQueue[ViewController.playbackIndex].user?.username ?? "unknown artist"))
+                    (ViewController.currentTrack!.user?.username ?? "unknown artist"))
             case .volume:
                 setPlaybackLabel(to: "    Vol: " + String(ViewController.savedVolume))
             case .frequency:
@@ -1013,9 +1038,9 @@ class ViewController: NSViewController{
     func checkAndInvokeImage(){
         switch ViewController.defaults.integer(forKey: "artwork") {
         case 1:
-            if ViewController.playableQueue[ViewController.playbackIndex].artwork_url != nil{
+            if ViewController.currentTrack!.artwork_url != nil{
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                    self.invokeImage(from: URL(string: ((ViewController.playableQueue[ViewController.playbackIndex].artwork_url)?.replacingOccurrences(of: "large", with: "t500x500"))!)!)
+                    self.invokeImage(from: URL(string: ((ViewController.currentTrack!.artwork_url)?.replacingOccurrences(of: "large", with: "t500x500"))!)!)
                 }
             }
         case 2:
