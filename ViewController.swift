@@ -259,6 +259,12 @@ class ViewController: NSViewController{
     //*********************************************************************
     override func viewDidAppear() {
         super.viewDidAppear()
+//        Uncomment to reset user settings
+//
+//        ViewController.defaults.set(0, forKey: "artwork")
+//        ViewController.defaults.set(0, forKey: "appearance")
+//        ViewController.defaults.set(0, forKey: "qboot")
+//        ViewController.defaults.set(0, forKey: "deepwave")
         touchBar = bar
         NSEvent.addLocalMonitorForEvents(matching: .keyDown) {
             self.myKeyDown(with: $0)
@@ -377,6 +383,16 @@ class ViewController: NSViewController{
                 tprint(AutomneKeys.dedication, raw: true, noWipe: true)
             }
         }
+        else if event.keyCode == 124{
+            if ViewController.systemStatus == .playing {
+                advance()
+            }
+        }
+        else if event.keyCode == 123{
+            if ViewController.systemStatus == .playing {
+                reverse()
+            }
+        }
     }
     func sendToGithub(){
         NSWorkspace.shared.open(URL(string: "https://github.com/Lesterrry/Radio-Automne")!)
@@ -387,7 +403,7 @@ class ViewController: NSViewController{
         ViewController.defaults.set(ViewController.smenu.elements[1].value, forKey: "appearance")
         ViewController.defaults.set(ViewController.smenu.elements[2].value, forKey: "qboot")
         let v = ViewController.smenu.elements[4].value
-        if ViewController.defaults.integer(forKey: "deepwave") != v{
+        if ViewController.defaults.integer(forKey: "deepwave") != v && (ViewController.systemStatus == .playing || ViewController.systemStatus == .paused){
             if v == 1{
                 self.initDeepwave(with: ViewController.currentTrack!)
             }else{
@@ -399,8 +415,8 @@ class ViewController: NSViewController{
                 }
                 ViewController.playableQueue = npq
             }
-            ViewController.defaults.set(v, forKey: "deepwave")
         }
+        ViewController.defaults.set(v, forKey: "deepwave")
         ViewController.inMenu = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
             self.trestore()
@@ -428,7 +444,7 @@ class ViewController: NSViewController{
             light.isHidden = false
         }
         tprint("AutomneOS \(ViewController.VERSION_NAME)", raw: true)
-        tprint(appVersion ?? "")
+        tprint(appVersion ?? "", raw: true)
         glitchStripe.isHidden = false
         setSystemStatus(to: AutomneProperties.SystemStatus.busy)
         TBLabel.stringValue = "AutomneOS " + ViewController.VERSION_NAME
@@ -614,8 +630,9 @@ class ViewController: NSViewController{
         if r != nil{
             setPlaybackControllerState(to: .error)
             setSystemStatus(to: .ready)
-            tprint("ERR11: " + r!.rawValue)
-            ViewController.player.pause()
+            tprint("ERR11: AVP_W, " + r!.rawValue)
+            tprint("Check connection and press play")
+            ViewController.player = AVPlayer()
         }
     }
     func setPlaybackControllerState(to: PlaybackControllerState){
@@ -765,14 +782,12 @@ class ViewController: NSViewController{
                     self.tprint(String(obj.count) + " tracks by DeepWave")
                 }
                 catch{
-                    self.tprint("ERROR12: " + error.localizedDescription)
-                    self.setSystemStatus(to: AutomneProperties.SystemStatus.error)
+                    self.tprint("Couldn't init DeepWave")
                     SFX.shutUp()
                 }
 
             case .failure(let error):
-                self.tprint("ERROR13: " + error.localizedDescription)
-                self.setSystemStatus(to: AutomneProperties.SystemStatus.error)
+                self.tprint("DeepWave error: " + error.localizedDescription)
                 SFX.shutUp()
             }
         }
@@ -808,8 +823,8 @@ class ViewController: NSViewController{
                         self.tprint("***", raw: true)
                         if ViewController.defaults.integer(forKey: "appearance") == 0{
                             ViewController.defaults.set(1, forKey: "appearance")
-                            self.tprint("Power is applied for the first time, it's recommended to press 'HELP'.", raw: true)
-                            self.tprint("Check 'automne.fetchdev.host' for further info", raw: true)
+                            self.tprint("Welcome to Automne!", raw: true)
+                            self.tprint("Check 'automne.fetchdev.host' for info", raw: true)
                             self.tprint("***", raw: true)
                             ViewController.defaults.set(2, forKey: "artwork")
                         }

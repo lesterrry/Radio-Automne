@@ -19,7 +19,7 @@ class AutomneAxioms{
                                   "You are not alone.",
                                   "Я не помню, как я оказался в лесу",
                                   "These are my friends",
-                                  "Leaves are always yellow, but never brown in Golovkovo",
+                                  "Leaves are always yellow in Golovkovo",
                                   "Smash the government",
                                   "You always have a chance.",
                                   "Don't forget who you are",
@@ -69,5 +69,28 @@ class AutomneAxioms{
                                   "Caring is the coolest thing I've seen anyone do.",
                                   "It was a nice holiday without you",
                                   "And it's called jazz",
-                                  "It's the colours you have, no need to be sad"]
+                                  "It's the colours you have, no need to be sad",
+                                  "Are you ready for the Longest Night?",
+                                  "And I think we'd survive in the wild",
+                                  "Слушать старые пластинки",
+                                  "I only have one thing in my head",
+                                  "Пойдем фоткаться на пленку",
+                                  "Гоу в Балчуг после уроков",
+                                  "Я такой один, мне не нужно притворяться",
+                                  "#038",
+                                  "26.04.2019 – ∞",
+                                  "Please, if you hear me, go away",
+                                  "Все получится"]
+    
+    public static func uniq<S : Sequence, T : Equatable>(source: S) -> [T] where S.Iterator.Element == T {
+        var buffer = [T]()
+        var added = [T]()
+        for elem in source {
+            if !added.contains(elem) {
+                buffer.append(elem)
+                added.append(elem)
+            }
+        }
+        return buffer
+    }
 }
