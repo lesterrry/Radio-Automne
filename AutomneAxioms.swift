@@ -7,8 +7,10 @@
 //
 
 import Foundation
+import SystemConfiguration
+
 class AutomneAxioms{
-    public static let firstResponderNoseQueue = "https://automne.fetchdev.host/get.php?key="
+    public static let firstResponderNoseQueue = "https://automne.aydar.media/get.php?key="
     public static let SCNoseQueue = "https://api.soundcloud.com/"
     public static let SCPlaylistQueue = "playlists/"
     public static let SCDeepWaveQueue = "/related"
@@ -80,7 +82,22 @@ class AutomneAxioms{
                                   "#038",
                                   "26.04.2019 – ∞",
                                   "Please, if you hear me, go away",
-                                  "Все получится"]
+                                  "Все получится",
+                                  "И тебе приснится целый мир без меня",
+                                  "Я заберу тебя танцевать",
+                                  "Знаешь, я так соскучился",
+                                  "Lavender is always running through my blood",
+                                  "Trapped in a club",
+                                  "All we had to do was touch",
+                                  "Spies hide out in every corner",
+                                  "Tears falling down at the party",
+                                  "Saddest little baby in the room",
+                                  "Еще одну бессонную ночь я посвящаю тебе",
+                                  "Поды для джула вкуснее всего в Люберцах",
+                                  "This couldn't happen again",
+                                  "I'd rather dissolve than have you ignore me",
+                                  "I miss the Weird Autumn",
+                                  "The countryside sceneries hardly change"]
     
     public static func uniq<S : Sequence, T : Equatable>(source: S) -> [T] where S.Iterator.Element == T {
         var buffer = [T]()
@@ -93,4 +110,30 @@ class AutomneAxioms{
         }
         return buffer
     }
+    public static func isConnectedToNetwork() -> Bool {
+        var zeroAddress = sockaddr_in()
+        zeroAddress.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+        zeroAddress.sin_family = sa_family_t(AF_INET)
+
+        guard let defaultRouteReachability = withUnsafePointer(to: &zeroAddress, {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                SCNetworkReachabilityCreateWithAddress(nil, $0)
+            }
+        }) else {
+            return false
+        }
+
+        var flags: SCNetworkReachabilityFlags = []
+        if !SCNetworkReachabilityGetFlags(defaultRouteReachability, &flags) {
+            return false
+        }
+        if flags.isEmpty {
+            return false
+        }
+
+        let isReachable = flags.contains(.reachable)
+        let needsConnection = flags.contains(.connectionRequired)
+
+        return (isReachable && !needsConnection)
+    } 
 }
