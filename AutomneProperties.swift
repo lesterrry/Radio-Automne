@@ -23,4 +23,9 @@ public class AutomneProperties{
         case error
         case none
     }
+    enum FrequencyControllerState{
+        case tuning
+        case tuned
+        case unknown
+    }
 }

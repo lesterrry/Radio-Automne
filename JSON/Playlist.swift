@@ -14,19 +14,13 @@ For support, please feel free to contact me at https://www.linkedin.com/in/syeda
 import Foundation
 struct Playlist : Codable {
 	let duration : Int?
-	let release_day : String?
 	let permalink_url : String?
 	let genre : String?
 	let permalink : String?
 	let purchase_url : String?
-	let release_month : String?
 	let description : String?
 	let tags : String?
 	let uri : String?
-	let label_name : String?
-	let label : String?
-	let tag_list : String?
-	let release_year : String?
 	let track_count : Int?
 	let user_id : Int?
 	let last_modified : String?
@@ -36,9 +30,6 @@ struct Playlist : Codable {
 	let id : Int?
 	let tracks_uri : String?
 	let downloadable : String?
-	let sharing : String?
-	let created_at : String?
-	let release : String?
 	let likes_count : Int?
 	let kind : String?
 	let title : String?
@@ -54,19 +45,13 @@ struct Playlist : Codable {
 	enum CodingKeys: String, CodingKey {
 
 		case duration = "duration"
-		case release_day = "release_day"
 		case permalink_url = "permalink_url"
 		case genre = "genre"
 		case permalink = "permalink"
 		case purchase_url = "purchase_url"
-		case release_month = "release_month"
 		case description = "description"
 		case tags = "tags"
 		case uri = "uri"
-		case label_name = "label_name"
-		case label = "label"
-		case tag_list = "tag_list"
-		case release_year = "release_year"
 		case track_count = "track_count"
 		case user_id = "user_id"
 		case last_modified = "last_modified"
@@ -76,9 +61,6 @@ struct Playlist : Codable {
 		case id = "id"
 		case tracks_uri = "tracks_uri"
 		case downloadable = "downloadable"
-		case sharing = "sharing"
-		case created_at = "created_at"
-		case release = "release"
 		case likes_count = "likes_count"
 		case kind = "kind"
 		case title = "title"
@@ -95,19 +77,13 @@ struct Playlist : Codable {
 	init(from decoder: Decoder) throws {
 		let values = try decoder.container(keyedBy: CodingKeys.self)
 		duration = try values.decodeIfPresent(Int.self, forKey: .duration)
-		release_day = try values.decodeIfPresent(String.self, forKey: .release_day)
 		permalink_url = try values.decodeIfPresent(String.self, forKey: .permalink_url)
 		genre = try values.decodeIfPresent(String.self, forKey: .genre)
 		permalink = try values.decodeIfPresent(String.self, forKey: .permalink)
 		purchase_url = try values.decodeIfPresent(String.self, forKey: .purchase_url)
-		release_month = try values.decodeIfPresent(String.self, forKey: .release_month)
 		description = try values.decodeIfPresent(String.self, forKey: .description)
 		tags = try values.decodeIfPresent(String.self, forKey: .tags)
 		uri = try values.decodeIfPresent(String.self, forKey: .uri)
-		label_name = try values.decodeIfPresent(String.self, forKey: .label_name)
-		label = try values.decodeIfPresent(String.self, forKey: .label)
-		tag_list = try values.decodeIfPresent(String.self, forKey: .tag_list)
-		release_year = try values.decodeIfPresent(String.self, forKey: .release_year)
 		track_count = try values.decodeIfPresent(Int.self, forKey: .track_count)
 		user_id = try values.decodeIfPresent(Int.self, forKey: .user_id)
 		last_modified = try values.decodeIfPresent(String.self, forKey: .last_modified)
@@ -117,9 +93,6 @@ struct Playlist : Codable {
 		id = try values.decodeIfPresent(Int.self, forKey: .id)
 		tracks_uri = try values.decodeIfPresent(String.self, forKey: .tracks_uri)
 		downloadable = try values.decodeIfPresent(String.self, forKey: .downloadable)
-		sharing = try values.decodeIfPresent(String.self, forKey: .sharing)
-		created_at = try values.decodeIfPresent(String.self, forKey: .created_at)
-		release = try values.decodeIfPresent(String.self, forKey: .release)
 		likes_count = try values.decodeIfPresent(Int.self, forKey: .likes_count)
 		kind = try values.decodeIfPresent(String.self, forKey: .kind)
 		title = try values.decodeIfPresent(String.self, forKey: .title)

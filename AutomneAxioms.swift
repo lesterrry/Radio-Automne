@@ -97,7 +97,7 @@ class AutomneAxioms{
                                   "This couldn't happen again",
                                   "I'd rather dissolve than have you ignore me",
                                   "I miss the Weird Autumn",
-                                  "The countryside sceneries hardly change"]
+                                  "Сountryside sceneries hardly change"]
     
     public static func uniq<S : Sequence, T : Equatable>(source: S) -> [T] where S.Iterator.Element == T {
         var buffer = [T]()
