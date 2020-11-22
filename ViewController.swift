@@ -712,6 +712,7 @@ class ViewController: NSViewController{
             tprint((ViewController.setFrequency?.streamDescription)!, raw: true)
             TBLabel.stringValue = (ViewController.setFrequency?.streamDescription)!
             tprint(" ***", raw: true)
+            removeImage()
         }
         else {
             let track = ViewController.playableQueue[from]
