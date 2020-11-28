@@ -19,6 +19,10 @@ class AutomneCore {
     private static var slerror: NSDictionary?
     private static let slscriptObject = NSAppleScript(contentsOf: slurl!, error: &slerror)
     
+    private static let churl = Bundle.main.url(forResource: "SystemSleepCheck", withExtension: "scpt")
+    private static var cherror: NSDictionary?
+    private static let chscriptObject = NSAppleScript(contentsOf: churl!, error: &cherror)
+    
     public static func getSystemVolume() -> Int{
         if let outputString = volscriptObject?.executeAndReturnError(&volerror).stringValue {
             return Int(outputString) ?? -1
@@ -34,6 +38,13 @@ class AutomneCore {
             
         } else if (slerror != nil) {
             print("ERROR9: " + slerror!.description)
+        }
+    }
+    public static func systemSleepCheck(){
+        if (chscriptObject?.executeAndReturnError(&cherror).stringValue) != nil {
+            
+        } else if (cherror != nil) {
+            print("ERROR9: " + cherror!.description)
         }
     }
     public static func notify(title: String, subtitle: String = ""){
