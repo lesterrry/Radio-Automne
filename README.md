@@ -2,7 +2,7 @@
 World wide web audio receiving machine
 
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
-[![Release](https://img.shields.io/badge/latest%20release-v1.0.0%20Laika-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
+[![Release](https://img.shields.io/badge/latest%20release-v1.0.1%20Laika-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 [![SoundCloud](https://img.shields.io/badge/SoundCloud-listen-9cf?style=social&logo=soundcloud)](https://soundcloud.com/lesterrry)
