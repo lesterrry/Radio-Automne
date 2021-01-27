@@ -2,7 +2,7 @@
 World wide web audio receiving machine
 
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
-[![Release](https://img.shields.io/badge/latest%20release-v1.0.1%20Laika-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
+[![Release](https://img.shields.io/badge/latest%20release-v1.0.2%20Laika-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 [![SoundCloud](https://img.shields.io/badge/SoundCloud-listen-9cf?style=social&logo=soundcloud)](https://soundcloud.com/lesterrry)
@@ -37,6 +37,17 @@ System status indicator is located underneath Standby button. Colourless indicat
 ### 5. Personalizing the machine
 To precisely set up the machile, user should press Setup button. Thus, a Setup menu will be shown in the Terminal window. Switching between settings is done by preessing Up and Down keys, while their values are set using Right and Left ones.
 Note: sleep timer function needs your special permission if running for the first time. Press 'SLEEP TEST' button, grant permission and you're ready to go.
+
+Keyboard operation:
+
+| Key | Action |
+| ------ | ------ |
+| Q | Quit |
+| A | Select lower frequency |
+| S | Set selected frequency |
+| D | Select upper frequency |
+| Space | Play/Pause |
+| Return | Switch on/off |
 
 Setting keys:
 
