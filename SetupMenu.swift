@@ -3,7 +3,7 @@
 //  Radio Automne
 //
 //  Created by Aydar Nasibullin on 03.10.2020.
-//  Copyright © 2020 Fetch Development. All rights reserved.
+//  Copyright © 2020-2021 Fetch Development. All rights reserved.
 //
 
 import Foundation

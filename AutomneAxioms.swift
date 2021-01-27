@@ -3,7 +3,7 @@
 //  Radio Automne
 //
 //  Created by Aydar Nasibullin on 30.09.2020.
-//  Copyright © 2020 Fetch Development. All rights reserved.
+//  Copyright © 2020-2021 Fetch Development. All rights reserved.
 //
 
 import Foundation
@@ -98,7 +98,17 @@ class AutomneAxioms{
                                   "I'd rather dissolve than have you ignore me",
                                   "I miss the Weird Autumn",
                                   "Сountryside sceneries hardly change",
-                                  "the holes of my sweater"]
+                                  "the holes of my sweater",
+                                  "blood like wine",
+                                  "Вишенку так я и не достал",
+                                  "Хочу Цезарь из Царского Села",
+                                  "В ЦДМ есть Шоколадница",
+                                  "Я смешаю коньяк и Байкал",
+                                  "Two oceans in between us",
+                                  "I left you at the farm",
+                                  "We had a good time, didn't we?",
+                                  "Drink at the casino all night",
+                                  "sunsets i wanna hear your voice"]
     
     public static func uniq<S : Sequence, T : Equatable>(source: S) -> [T] where S.Iterator.Element == T {
         var buffer = [T]()

@@ -3,7 +3,7 @@
 //  Radio Automne
 //
 //  Created by Aydar Nasibullin on 30.09.2020.
-//  Copyright © 2020 Fetch Development. All rights reserved.
+//  Copyright © 2020-2021 Fetch Development. All rights reserved.
 //
 
 import Cocoa
@@ -81,13 +81,11 @@ class ViewController: NSViewController{
             ViewController.player.pause()
             ViewController.playlistArtworkServed = false
             ViewController.mainDisplayState = .frequency
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                let fr = ViewController.selectedFrequency!
-                if fr.isStream! {
-                    self.startStream(frequency: fr)
-                }else{
-                    self.retrieveTracks(frequency: fr)
-                }
+            let fr = ViewController.selectedFrequency!
+            if fr.isStream! {
+                self.startStream(frequency: fr)
+            }else{
+                self.retrieveTracks(frequency: fr)
             }
         }
     }
@@ -285,18 +283,6 @@ class ViewController: NSViewController{
                      playbackControllerLight_sleep,
                      playbackControllerLight_deepwave,
                      playbackControllerLight_stream]
-        ViewController.ticker = Timer.scheduledTimer(
-            timeInterval: 1.0,
-            target: self,
-            selector: #selector(self.tick), userInfo: nil, repeats: true)
-        ViewController.mainDisplaySwitchTimer = Timer.scheduledTimer(
-            timeInterval: 3.5,
-            target: self,
-            selector: #selector(self.mainDisplayTick), userInfo: nil, repeats: true)
-        ViewController.longTicker = Timer.scheduledTimer(
-            timeInterval: 10,
-            target: self,
-            selector: #selector(self.longTick), userInfo: nil, repeats: true)
     }
     
     override var representedObject: Any? {
@@ -342,37 +328,56 @@ class ViewController: NSViewController{
     func myKeyDown(with event: NSEvent) {
         super.keyDown(with: event)
         hideImage()
-        if ViewController.inMenu{
-            if event.keyCode == 0x7E //DOWN
-            {
-                tclear()
-                ViewController.smenu = ViewController.smenu.downSel()
-                tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true, noWipe: true)
-            }
-            else if event.keyCode == 0x7D //UP
-            {
-                tclear()
-                ViewController.smenu = ViewController.smenu.upSel()
-                tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true, noWipe: true)
-            }
-            else if event.keyCode == 0x7C //RIGHT
-            {
+        if event.keyCode == 0x7E && ViewController.inMenu //DOWN
+        {
+            tclear()
+            ViewController.smenu = ViewController.smenu.downSel()
+            tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true, noWipe: true)
+        }
+        else if event.keyCode == 0x7D && ViewController.inMenu //UP
+        {
+            tclear()
+            ViewController.smenu = ViewController.smenu.upSel()
+            tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true, noWipe: true)
+        }
+        else if event.keyCode == 0x7C //RIGHT
+        {
+            if ViewController.inMenu {
                 tclear()
                 ViewController.smenu = ViewController.smenu.increment([{},{},{},{},{},{},AutomneCore.systemSleepCheck])
                 tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true, noWipe: true)
+            } else {
+                if ViewController.systemStatus == .active && (ViewController.setFrequency == nil || !(ViewController.setFrequency?.isStream ?? true)){
+                    advance()
+                }
             }
-            else if event.keyCode == 0x7B //LEFT
-            {
+        }
+        else if event.keyCode == 0x7B //LEFT
+        {
+            if ViewController.inMenu {
                 tclear()
                 ViewController.smenu = ViewController.smenu.decrement()
                 tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true, noWipe: true)
-            }
-            else if event.keyCode == 36 //RETURN
-            {
-                saveDefaults()
+                
+            } else {
+                if ViewController.systemStatus == .active && (ViewController.setFrequency == nil || !(ViewController.setFrequency?.isStream ?? true)){
+                    reverse()
+                }
             }
         }
-        if event.keyCode == 49{
+        else if event.keyCode == 36  //RETURN
+        {
+            if ViewController.inMenu {
+                saveDefaults()
+            } else {
+                if ViewController.systemStatus == .standby{
+                    powerOn()
+                } else if ViewController.systemStatus != .busy {
+                    powerOff()
+                }
+            }
+        }
+        if event.keyCode == 49 { //SPACE
             if ViewController.systemStatus == .ready{
                 play(from: ViewController.playbackIndex)
             }
@@ -383,16 +388,36 @@ class ViewController: NSViewController{
                 resume()
             }
         }
-        else if event.keyCode == 12{
+        else if event.keyCode == 12 { //Q
             exit(0)
         }
-        else if event.keyCode == 0{
+        else if event.keyCode == 14 { //E
             if ViewController.TSBP < 14{
                 ViewController.TSBP += 1
             } else if ViewController.playbackControllerState == .playing{
                 ViewController.TSBP = 0
                 tclear()
                 tprint(AutomneKeys.dedication, raw: true, noWipe: true)
+            }
+        }
+        else if event.keyCode == 0 && ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
+            let i = ViewController.selectedFrequencyIndex
+            if i > 0 {
+                switchFrequency(to: ViewController.retrievedFrequencies[i - 1], index: i - 1)
+            }
+        }
+        else if event.keyCode == 2 && ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
+            let i = ViewController.selectedFrequencyIndex
+            if i < ViewController.retrievedFrequencies.count - 1 {
+                switchFrequency(to: ViewController.retrievedFrequencies[i + 1], index: i + 1)
+            }
+        }
+        else if event.keyCode == 1 && ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
+            let fr = ViewController.selectedFrequency!
+            if fr.isStream! {
+                self.startStream(frequency: fr)
+            }else{
+                self.retrieveTracks(frequency: fr)
             }
         }
     }
@@ -452,6 +477,19 @@ class ViewController: NSViewController{
         glitchStripe.isHidden = false
         setSystemStatus(to: AutomneProperties.SystemStatus.busy)
         TBLabel.stringValue = "AutomneOS " + ViewController.VERSION_NAME
+        
+        ViewController.ticker = Timer.scheduledTimer(
+            timeInterval: 1.0,
+            target: self,
+            selector: #selector(self.tick), userInfo: nil, repeats: true)
+        ViewController.mainDisplaySwitchTimer = Timer.scheduledTimer(
+            timeInterval: 3.5,
+            target: self,
+            selector: #selector(self.mainDisplayTick), userInfo: nil, repeats: true)
+        ViewController.longTicker = Timer.scheduledTimer(
+            timeInterval: 10,
+            target: self,
+            selector: #selector(self.longTick), userInfo: nil, repeats: true)
         
         if ViewController.defaults.integer(forKey: "qboot") == 0{
             SFX.playSFX(sfx: SFX.Effects.powerOn)
@@ -515,6 +553,10 @@ class ViewController: NSViewController{
         }
         terminal.stringValue = ""
         ViewController.inMenu = false
+        
+        ViewController.ticker.invalidate()
+        ViewController.mainDisplaySwitchTimer.invalidate()
+        ViewController.longTicker.invalidate()
     }
     
     @objc func longTick(){
@@ -545,7 +587,7 @@ class ViewController: NSViewController{
                 }
             }else{
                 playbackControllerLight_loading.isHidden = true
-                playbackControllerLight_play.isHidden = !b
+                playbackControllerLight_play.isHidden = !playbackControllerLight_stream.isHidden
                 if ViewController.currentTrack?.deepWave ?? false{
                     playbackControllerLight_deepwave.isHidden = !b
                 }
@@ -836,8 +878,7 @@ class ViewController: NSViewController{
                         self.switchFrequency(to: ViewController.retrievedFrequencies[0], index: 0)
                         if log { self.tprint("SUCCESS") }
                         if log {self.tprint("Retrieved " + String(ViewController.retrievedFrequencies.count) + " frequencies") }
-                        self.tprint("[First Responder message]", raw: true, noBreak: true)
-                        self.tprint(obj.message ?? "Remember me", raw: true)
+                        if obj.message != nil { self.tprint(obj.message!, raw: true) }
                         AutomneAxioms.messages.append(obj.message ?? "Hey there")
                         self.tprint("******", raw: true)
                         self.tprint("Ready")
