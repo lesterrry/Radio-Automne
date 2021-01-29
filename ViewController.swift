@@ -400,19 +400,22 @@ class ViewController: NSViewController{
                 tprint(AutomneKeys.dedication, raw: true, noWipe: true)
             }
         }
-        else if event.keyCode == 0 && ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
+        else if event.keyCode == 0 && ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{ //A
             let i = ViewController.selectedFrequencyIndex
             if i > 0 {
                 switchFrequency(to: ViewController.retrievedFrequencies[i - 1], index: i - 1)
             }
         }
-        else if event.keyCode == 2 && ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
+        else if event.keyCode == 2 && ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{ //D
             let i = ViewController.selectedFrequencyIndex
             if i < ViewController.retrievedFrequencies.count - 1 {
                 switchFrequency(to: ViewController.retrievedFrequencies[i + 1], index: i + 1)
             }
         }
-        else if event.keyCode == 1 && ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
+        else if event.keyCode == 1 && ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{ //S
+            ViewController.player.pause()
+            ViewController.playlistArtworkServed = false
+            ViewController.mainDisplayState = .frequency
             let fr = ViewController.selectedFrequency!
             if fr.isStream! {
                 self.startStream(frequency: fr)
@@ -587,7 +590,6 @@ class ViewController: NSViewController{
                 }
             }else{
                 playbackControllerLight_loading.isHidden = true
-                playbackControllerLight_play.isHidden = !playbackControllerLight_stream.isHidden
                 if ViewController.currentTrack?.deepWave ?? false{
                     playbackControllerLight_deepwave.isHidden = !b
                 }
@@ -597,7 +599,12 @@ class ViewController: NSViewController{
                 else{
                     playbackControllerLight_sleep.isHidden = true
                 }
-                playbackControllerLight_stream.isHidden = ViewController.setFrequency == nil ? true : !(ViewController.setFrequency?.isStream ?? true)
+//                playbackControllerLight_stream.isHidden = ViewController.setFrequency == nil ? true : !(ViewController.setFrequency?.isStream ?? true)
+                if ViewController.setFrequency?.isStream ?? true && ViewController.setFrequency != nil{
+                    playbackControllerLight_stream.isHidden = false
+                }else{
+                    playbackControllerLight_play.isHidden = !b
+                }
             }
         }
         
@@ -827,7 +834,10 @@ class ViewController: NSViewController{
             case .success( _):
                 do{
                     let decoder = JSONDecoder()
-                    var obj = try decoder.decode([Tracks].self, from: response.data!)
+                    
+                    guard var obj = try? decoder.decode([Tracks].self, from: response.data!) else {
+                        throw NSError()
+                    }
                     for i in 0..<obj.count{
                         obj[i].deepWave = true
                     }
