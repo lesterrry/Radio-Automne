@@ -1,1 +1,1 @@
-tell application "System Events" to display alert "Works"
+tell application "System Events" to display alert "Updated successfully"
