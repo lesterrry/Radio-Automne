@@ -9,7 +9,6 @@
 import Cocoa
 import Alamofire
 import AVFoundation
-import AudioToolbox
 
 class View: NSView {
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
@@ -24,7 +23,7 @@ class ViewController: NSViewController{
     //*********************************************************************
     static var systemStatus = AutomneProperties.SystemStatus.standby
     static var playbackControllerState = AutomneProperties.PlaybackControllerState.none
-    static let VERSION_NAME = "Laika"
+    static let VERSION_NAME = "Laika Major"
     
     //*********************************************************************
     //OUTLETS
@@ -59,7 +58,6 @@ class ViewController: NSViewController{
     ///Frequency Controller
     @IBAction func freqControlUpClicked(_ sender: Any) {
         if ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
-            SFX.playSFX(sfx: SFX.Effects.buttonClick)
             let i = ViewController.selectedFrequencyIndex
             if i < ViewController.retrievedFrequencies.count - 1 {
                 switchFrequency(to: ViewController.retrievedFrequencies[i + 1], index: i + 1)
@@ -68,7 +66,6 @@ class ViewController: NSViewController{
     }
     @IBAction func freqControlDownClicked(_ sender: Any) {
         if ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
-            SFX.playSFX(sfx: SFX.Effects.buttonClick)
             let i = ViewController.selectedFrequencyIndex
             if i > 0 {
                 switchFrequency(to: ViewController.retrievedFrequencies[i - 1], index: i - 1)
@@ -77,7 +74,6 @@ class ViewController: NSViewController{
     }
     @IBAction func freqControlSetClicked(_ sender: Any) {
         if ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
-            SFX.playSFX(sfx: SFX.Effects.buttonClick)
             ViewController.player.pause()
             ViewController.playlistArtworkServed = false
             ViewController.mainDisplayState = .frequency
@@ -96,24 +92,18 @@ class ViewController: NSViewController{
             powerOn()
         }
         else if ViewController.systemStatus != .busy{
-            SFX.playSFX(sfx: SFX.Effects.buttonClick)
             powerOff()
+            SFX.playSFX(sfx: .buttonClick)
         }
     }
     
     ///Playback Controller
     @IBAction func pauseClicked(_ sender: Any) {
-        if ViewController.systemStatus != .busy{
-            SFX.playSFX(sfx: SFX.Effects.buttonClick)
-        }
         if ViewController.playbackControllerState == .playing {
             pause()
         }
     }
     @IBAction func playClicked(_ sender: Any) {
-        if ViewController.systemStatus != .busy{
-            SFX.playSFX(sfx: SFX.Effects.buttonClick)
-        }
         if ViewController.systemStatus == .ready ||
             ViewController.playbackControllerState == .playing {
             play(from: ViewController.playbackIndex, init: true)
@@ -126,9 +116,7 @@ class ViewController: NSViewController{
         }
     }
     @IBAction func setupClicked(_ sender: Any) {
-        if ViewController.systemStatus != .busy{
-            SFX.playSFX(sfx: SFX.Effects.buttonClick)
-            if ViewController.systemStatus != .error
+        if ViewController.systemStatus != .busy && ViewController.systemStatus != .error
                 && ViewController.systemStatus != .standby
                 && !ViewController.inMenu{
                 let els = [
@@ -175,42 +163,26 @@ class ViewController: NSViewController{
             else if ViewController.inMenu{
                 saveDefaults()
             }
-        }
     }
     @IBAction func helpClicked(_ sender: Any) {
-        if ViewController.systemStatus != .busy{
-            SFX.playSFX(sfx: SFX.Effects.buttonClick)
-        }
         sendToGithub()
     }
     @IBAction func nextClicked(_ sender: Any) {
-        if ViewController.systemStatus != .busy{
-            SFX.playSFX(sfx: SFX.Effects.buttonClick)
-        }
         if ViewController.systemStatus == .active && (ViewController.setFrequency == nil || !(ViewController.setFrequency?.isStream ?? true)){
             advance()
         }
     }
     @IBAction func prevClicked(_ sender: Any) {
-        if ViewController.systemStatus != .busy{
-            SFX.playSFX(sfx: SFX.Effects.buttonClick)
-        }
         if ViewController.systemStatus == .active && (ViewController.setFrequency == nil || !(ViewController.setFrequency?.isStream ?? true)){
             reverse()
         }
     }
     @IBAction func shareClicked(_ sender: Any) {
-        if ViewController.systemStatus != .busy{
-            SFX.playSFX(sfx: SFX.Effects.buttonClick)
-        }
         if ViewController.systemStatus == .active && (ViewController.setFrequency == nil || !(ViewController.setFrequency?.isStream ?? true)){
             NSWorkspace.shared.open(URL(string: ViewController.currentTrack!.permalink_url!)!)
         }
     }
     @IBAction func diveClicked(_ sender: Any) {
-        if ViewController.systemStatus != .busy{
-            SFX.playSFX(sfx: SFX.Effects.buttonClick)
-        }
         if ViewController.systemStatus == .active && (ViewController.setFrequency == nil || !(ViewController.setFrequency?.isStream ?? true)){
             initDeepwave(with: ViewController.currentTrack!, append: false)
         }
@@ -493,7 +465,6 @@ class ViewController: NSViewController{
             timeInterval: 10,
             target: self,
             selector: #selector(self.longTick), userInfo: nil, repeats: true)
-        
         if ViewController.defaults.integer(forKey: "qboot") == 0{
             SFX.playSFX(sfx: SFX.Effects.powerOn)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
@@ -526,7 +497,7 @@ class ViewController: NSViewController{
             DispatchQueue.main.asyncAfter(deadline: .now() + 12) {
                 self.retrieveFrequencies()
             }
-        } else{
+        } else {
             SFX.playSFX(sfx: SFX.Effects.buttonClick)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
                 for light in self.allLights {
@@ -535,6 +506,10 @@ class ViewController: NSViewController{
                 self.tprint("[QUICK BOOT]", raw: true)
                 self.retrieveFrequencies()
             }
+        }
+        if appVersion != ViewController.defaults.string(forKey: "version"){
+            ViewController.defaults.set(appVersion, forKey: "version")
+            AutomneCore.systemSleepCheck()
         }
     }
     
@@ -588,18 +563,15 @@ class ViewController: NSViewController{
                     || !ViewController.playerWaitingTimeoutTimer.isValid{
                     ViewController.playerWaitingTimeoutTimer = Timer.scheduledTimer(timeInterval: 10.0, target: self, selector: #selector(self.playerWaitingTimeout), userInfo: nil, repeats: false)
                 }
-            }else{
+            } else {
                 playbackControllerLight_loading.isHidden = true
-                if ViewController.currentTrack?.deepWave ?? false{
-                    playbackControllerLight_deepwave.isHidden = !b
-                }
+                playbackControllerLight_deepwave.isHidden = !(ViewController.currentTrack?.deepWave ?? false)
                 if ViewController.sleepTimer != nil && ViewController.sleepTimer.isValid{
                     playbackControllerLight_sleep.isHidden = false
                 }
                 else{
                     playbackControllerLight_sleep.isHidden = true
                 }
-//                playbackControllerLight_stream.isHidden = ViewController.setFrequency == nil ? true : !(ViewController.setFrequency?.isStream ?? true)
                 if ViewController.setFrequency?.isStream ?? true && ViewController.setFrequency != nil{
                     playbackControllerLight_stream.isHidden = false
                 }else{
@@ -616,7 +588,7 @@ class ViewController: NSViewController{
             }
             let tail = (stdv == nil ? "" : ("    Sleep: " + stdv!))
             if ViewController.setFrequency != nil && (ViewController.setFrequency?.isStream)! {
-                self.setPlaybackLabel(to: "Live Stream " + tail)
+                self.setPlaybackLabel(to: "Live " + tail)
             }
             else {
                 let sec = Int(ViewController.player.currentTime().seconds)
@@ -775,7 +747,7 @@ class ViewController: NSViewController{
                 tprint(ViewController.description, raw: true)
                 TBLabel.stringValue = ViewController.description
                 tprint(" ***", raw: true)
-            }else{
+            } else {
                 let e = AutomneAxioms.emojis.randomElement()!
                 tprint(e + " " + (AutomneAxioms.messages.randomElement() ?? "Playing..."), raw: true, addBreak: true)
                 AutomneCore.notify(title: e + (track.user?.username ?? "Unknown") + " in our broadcast",
@@ -805,12 +777,14 @@ class ViewController: NSViewController{
             tprint("ERROR7: " + ViewController.player.error!.localizedDescription)
         }
     }
+    
     func pause(){
         ViewController.player.pause()
         ViewController.sleepTimer?.invalidate()
         setSystemStatus(to: .active)
         setPlaybackControllerState(to: .paused)
     }
+    
     func resume(){
         ViewController.player.play()
         if ViewController.player.error != nil{
@@ -945,7 +919,7 @@ class ViewController: NSViewController{
     func retrieveTracks(frequency: Frequency){
         let log = (ViewController.defaults.integer(forKey: "log") == 1) ? true : false
         ViewController.sleepTimer?.invalidate()
-        setPlaybackLabel(to: ". . . . .")
+        setPlaybackLabel(to: "")
         TBLabel.stringValue = ". . . . ."
         setFreqLight(to: .tuning, new: frequency.isNew!)
         SFX.playSFX(sfx: SFX.Effects.radioSetup)
