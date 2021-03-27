@@ -108,7 +108,76 @@ class AutomneAxioms{
                                   "I left you at the farm",
                                   "We had a good time, didn't we?",
                                   "Drink at the casino all night",
-                                  "sunsets i wanna hear your voice"]
+                                  "sunsets i wanna hear your voice",
+                                  "God Bless My Socially Retarded Friends",
+                                  "Лето тупо класс",
+                                  "хочу питсы"]
+    
+    public static let trackNarratives = [
+        ("Now playing", true),
+        ("in our broadcast", false),
+        ("Let's head to", true),
+        ("It's time for", true),
+        ("Playing", true),
+        ("is playing right now", false),
+        ("The following $ is", true),
+        ("Coming right up,", true),
+        ("And the next one $ is", true),
+        ("Especially for you,", true),
+        ("Let's listen to", true),
+        ("that's the $", false),
+        ("is up to your ears", false)
+    ]
+    public static var specialNarratives = [
+        "Welcome back",
+        "Never settle",
+        "We missed you a lot"
+    ]
+    public static let specialTimeNarratives = [
+        "morning": [
+            "Good morning",
+            "Autumn wishes you a pleasant morning",
+            "Spend your upcoming day as productive as possible",
+            "Don't forget to wish your loved ones good morning",
+            "Доброе утро, друг",
+            "Сделай это утро приятным",
+            "Вот оно, утро, с которого надо начинать день"
+        ],
+        "day": [
+            "This day is great, is not it?",
+            "Autumn brings music to your day",
+            "Добрый денёчек",
+            "Пусть этот день будет лучше, чем вчерашний",
+            "Ты красивый сегодня",
+            "Уже выходил на улицу?"
+        ],
+        "evening": [
+            "Good evening",
+            "Autumn wishes you a great evening",
+            "Think about the following day. What would you like it to be?",
+            "Never be sad. The day ends, but the life will never.",
+            "Добрый вечер, дорогой друг",
+            "Не забывай про режим сна, это полезно",
+            "Как ты встретил этот закат?",
+            "С кем встретил закат?",
+            "Разработчик готовится ко сну. И тебе советует!"
+        ],
+        "night": [
+            "Good night",
+            "Enjoy the silence",
+            "Even if there's no one around, autumn is here this night",
+            "Autumn never sleeps",
+            "Don't be sad this night",
+            "The next day will be great",
+            "Let these sounds follow your night",
+            "Спокойной ночи. Или продуктивной.",
+            "Засыпать одному не страшно. Всегда наступает утро.",
+            "Обними друга. Или акулу из икеи.",
+            "Найди на небе луну",
+            "Звезды этой ночью сияют для тебя",
+            "Засыпай, самая лучшая боль"
+        ]
+    ]
     
     public static func uniq<S : Sequence, T : Equatable>(source: S) -> [T] where S.Iterator.Element == T {
         var buffer = [T]()
