@@ -6,7 +6,7 @@ World wide web audio receiving machine
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 [![SoundCloud](https://img.shields.io/badge/SoundCloud-listen-9cf?style=social&logo=soundcloud)](https://soundcloud.com/lesterrry)
-![Screenshot](https://github.com/Lesterrry/Radio-Automne/blob/main/screeens/Main.gif)
+![Screenshot](https://github.com/Lesterrry/Radio-Automne/raw/main/screeens/Main.gif)
 ## What is it?
 Radio Automne is an internet-radio client, wrapped in beautiful user interface. It provides such features, as:
 - Automatic frequency range fetching, configuring and setting up
