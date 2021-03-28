@@ -2,4 +2,4 @@ theme: jekyll-theme-minimal
 title: Le Radio Automne
 description: Handsome internet radio machine
 logo: https://github.com/Lesterrry/Radio-Automne/raw/main/screeens/512.png
-show_downloads: true
+show_downloads: false
