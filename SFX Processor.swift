@@ -8,10 +8,14 @@
 
 import Foundation
 import AVFoundation
+import Cocoa
 
 class SFX {
     private static var player = AVAudioPlayer()
     private static let synth = AVSpeechSynthesizer()
+    public static var voiceIdentifier: String? = nil
+    private static let preferredVoices = ["ava.premium", "samantha.premium", "daniel", "alex"]
+    
     public enum Effects: String {
         case powerOn = "PowOn"
         case buttonClick = "Button"
@@ -30,44 +34,71 @@ class SFX {
         }
     }
     
-    public static func shutUp(){
+    public static func playSFX(sfx: String){
+        NSSound(named: sfx)?.play()
+    }
+    
+    public static func shutUp(speaker: Bool = false){
         player.stop()
-        synth.stopSpeaking(at: .immediate)
+        if speaker { synth.stopSpeaking(at: .immediate) }
+    }
+    
+    public static func testVoices() {
+        print(AVSpeechSynthesisVoice.speechVoices())
     }
     
     public static func speak(say: String, lang: String) {
         let utterance = AVSpeechUtterance(string: say)
         switch lang {
-        case "en-US":
-            utterance.voice = AVSpeechSynthesisVoice(identifier: "com.apple.speech.synthesis.voice.samantha")
-        default:
-            utterance.voice = AVSpeechSynthesisVoice(language: lang)
+            case "en":
+                if voiceIdentifier == nil {
+                    for s in preferredVoices{
+                        let d = "com.apple.speech.synthesis.voice." + s
+                        if AVSpeechSynthesisVoice(identifier: d) != nil {
+                            voiceIdentifier = d
+                            break
+                        }
+                    }
+                    if voiceIdentifier == nil {
+                        ViewController.defaults.set(0, forKey: "narrator")
+                        AutomneCore.displayAlert(title: "No voices found", message: "Automne was unable to find any voices downloaded on this machine. Narrator will be switched off. Refer to manual in order to download a voice")
+                        return
+                    }
+                }
+                utterance.voice = AVSpeechSynthesisVoice(identifier: voiceIdentifier!)
+            default:
+                utterance.voice = AVSpeechSynthesisVoice(language: lang)
         }
 
         utterance.rate = 0.4
-        utterance.volume = 1
-        utterance.preUtteranceDelay = 1
+        utterance.volume = 0.7
+        utterance.postUtteranceDelay = 0.7
+        playSFX(sfx: "Blow")
         synth.speak(utterance)
+    }
+    
+    public static func speakWelcome(){
+        speak(say: AutomneAxioms.specialWelcomeNarratives.randomElement()!, lang: "en")
     }
     
     public static func composeAndSpeak(track: String, artist: String) -> Bool {
         if synth.isSpeaking { return false }
-        let a = Int.random(in: 1...7)
+        let a = Int.random(in: 1...8)
         if a == 1 || a == 2 {
             let s = AutomneAxioms.trackNarratives.randomElement()
             let d = a == 1 ? track : artist
             let f = s!.0.replacingOccurrences(of: "$", with: a == 1 ? "track" : "artist")
             let lang: String
-            if d.isLatin { lang = "en-US" }
+            if d.isLatin { lang = "en" }
             else if d.isCyrillic { lang = "ru-RU" }
-            else { return false}
-            if s!.1 { speak(say: f, lang: "en-US") }
+            else { return false }
+            if s!.1 { speak(say: f, lang: "en") }
             speak(say: d, lang: lang)
-            if !s!.1 { speak(say: f, lang: "en-US") }
+            if !s!.1 { speak(say: f, lang: "en") }
         } else if a == 3 || a == 4 {
             let s: String
             if a == 3 {
-                s = AutomneAxioms.specialNarratives.randomElement()!
+                s = AutomneAxioms.messages.randomElement()!
             } else {
                 let date = Date()
                 let calendar = Calendar.current
@@ -88,10 +119,14 @@ class SFX {
                 s = AutomneAxioms.specialTimeNarratives[d]!.randomElement()!
             }
             if s.isLatin {
-                speak(say: s, lang: "en-US")
-            } else {
+                speak(say: s, lang: "en")
+            } else if s.isCyrillic {
                 speak(say: s, lang: "ru-RU")
+            } else {
+                return false
             }
+        } else {
+            return false
         }
         return true
     }

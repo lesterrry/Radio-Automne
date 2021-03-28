@@ -57,4 +57,11 @@ class AutomneCore {
             NSUserNotificationCenter.default.deliver(notification)
         }
     }
+    public static func displayAlert(title: String, message: String){
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = message
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
 }

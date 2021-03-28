@@ -9,6 +9,7 @@
 import Cocoa
 import Alamofire
 import AVFoundation
+import MediaPlayer
 
 class View: NSView {
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
@@ -79,7 +80,7 @@ class ViewController: NSViewController{
             let fr = ViewController.selectedFrequency!
             if fr.isStream! {
                 self.startStream(frequency: fr)
-            }else{
+            } else {
                 self.retrieveTracks(frequency: fr)
             }
         }
@@ -227,6 +228,8 @@ class ViewController: NSViewController{
     //*********************************************************************
     let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
     static let defaults = UserDefaults.standard
+    static let controlCenter = MPRemoteCommandCenter.shared()
+    static let controlCenterInfo = MPNowPlayingInfoCenter.default()
     let fetchLogo = "### ### ### ### # #\n#   #    #  #   # #\n##  ###  #  #   ###\n#   #    #  #   # #\n#   ###  #  ### # #"
     static let states = [MainDisplayState.frequency, MainDisplayState.song, MainDisplayState.artist, MainDisplayState.time]
     static let streamStates = [MainDisplayState.frequency, MainDisplayState.song, MainDisplayState.time]
@@ -236,6 +239,51 @@ class ViewController: NSViewController{
     //*********************************************************************
     override func viewDidAppear() {
         super.viewDidAppear()
+        ViewController.controlCenter.playCommand.addTarget {_ in
+            if ViewController.playbackControllerState == .paused {
+                self.resume()
+                return .success
+            } else {
+                return .commandFailed
+            }
+        }
+        ViewController.controlCenter.pauseCommand.addTarget {_ in
+            if ViewController.playbackControllerState == .playing {
+                self.pause()
+                return .success
+            } else {
+                return .commandFailed
+            }
+        }
+        ViewController.controlCenter.nextTrackCommand.addTarget {_ in
+            if ViewController.systemStatus == .active && (ViewController.setFrequency == nil || !(ViewController.setFrequency?.isStream ?? true)){
+                self.advance()
+                return .success
+            } else {
+                return .commandFailed
+            }
+        }
+        ViewController.controlCenter.previousTrackCommand.addTarget {_ in
+            if ViewController.systemStatus == .active && (ViewController.setFrequency == nil || !(ViewController.setFrequency?.isStream ?? true)){
+                self.reverse()
+                return .success
+            } else {
+                return .commandFailed
+            }
+        }
+        ViewController.controlCenter.seekForwardCommand.addTarget {_ in
+            return .commandFailed
+        }
+        ViewController.controlCenter.seekBackwardCommand.addTarget {_ in
+            return .commandFailed
+        }
+        ViewController.controlCenter.changePlaybackPositionCommand.addTarget {_ in
+            if ViewController.controlCenterInfo.nowPlayingInfo != nil {
+                ViewController.controlCenterInfo.nowPlayingInfo!["MPNowPlayingInfoPropertyElapsedPlaybackTime"] = ViewController.player.currentTime().seconds
+            }
+            return .commandFailed
+        }
+        //        SFX.testVoices()
         //        Uncomment to reset user settings
         //
         //        ViewController.defaults.set(0, forKey: "artwork")
@@ -373,9 +421,6 @@ class ViewController: NSViewController{
                 tprint(AutomneKeys.dedication, raw: true, noWipe: true)
             }
         }
-//        else if event.keyCode == 45 { //N
-//            AppDelegate.toggleNightMode()
-//        }
         else if event.keyCode == 0 && ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{ //A
             let i = ViewController.selectedFrequencyIndex
             if i > 0 {
@@ -507,6 +552,9 @@ class ViewController: NSViewController{
                 }
                 self.tprint("[QUICK BOOT]", raw: true)
                 self.retrieveFrequencies()
+                if ViewController.defaults.integer(forKey: "narrator") == 1 {
+                    SFX.speakWelcome()
+                }
             }
         }
         if appVersion != ViewController.defaults.string(forKey: "version"){
@@ -533,7 +581,7 @@ class ViewController: NSViewController{
         }
         terminal.stringValue = ""
         ViewController.inMenu = false
-        
+        SFX.shutUp(speaker: true)
         ViewController.ticker.invalidate()
         ViewController.mainDisplaySwitchTimer.invalidate()
     }
@@ -677,12 +725,14 @@ class ViewController: NSViewController{
         case .playing:
             playbackControllerLight_pause.isHidden = true
             playbackControllerLight_error.isHidden = true
+            ViewController.controlCenterInfo.playbackState = .playing
         case .paused:
             playbackControllerLight_play.isHidden = true
             playbackControllerLight_pause.isHidden = false
             playbackControllerLight_loading.isHidden = true
             playbackControllerLight_error.isHidden = true
             playbackControllerLight_deepwave.isHidden = true
+            ViewController.controlCenterInfo.playbackState = .paused
         case .loading:
             playbackControllerLight_play.isHidden = true
             playbackControllerLight_pause.isHidden = true
@@ -696,12 +746,16 @@ class ViewController: NSViewController{
             playbackControllerLight_error.isHidden = false
             playbackControllerLight_deepwave.isHidden = true
             AutomneCore.notify(title: "🆘 Playback error encountered")
+            ViewController.controlCenterInfo.playbackState = .stopped
+            ViewController.controlCenterInfo.nowPlayingInfo = .none
         case .none:
             playbackControllerLight_play.isHidden = true
             playbackControllerLight_pause.isHidden = true
             playbackControllerLight_loading.isHidden = true
             playbackControllerLight_error.isHidden = true
             playbackControllerLight_deepwave.isHidden = true
+            ViewController.controlCenterInfo.playbackState = .stopped
+            ViewController.controlCenterInfo.nowPlayingInfo = .none
         }
         ViewController.playbackControllerState = to
         playbackControllerLight_stream.isHidden = !isStream
@@ -749,6 +803,13 @@ class ViewController: NSViewController{
             tprint((ViewController.setFrequency?.streamDescription)!, raw: true)
             tprint(" ***", raw: true)
             removeImage()
+            ViewController.controlCenterInfo.nowPlayingInfo = [
+                "mediaType": MPMediaType.anyAudio,
+                "albumTitle": "Live",
+                "artist": "FM " + ((ViewController.setFrequency?.num) ?? "unknown"),
+                "title": (ViewController.setFrequency?.name) ?? "Unknown",
+                MPNowPlayingInfoPropertyIsLiveStream: 1.0
+            ]
         } else {
             track = ViewController.playableQueue[from]
             ViewController.currentTrack = track
@@ -774,6 +835,15 @@ class ViewController: NSViewController{
             DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: {
                 self.checkAndInvokeImage()
             })
+            ViewController.controlCenterInfo.nowPlayingInfo = [
+                "mediaType": MPMediaType.music,
+                "albumTitle": (ViewController.setFrequency?.name) ?? "Deepwave",
+                "artist": (track?.user?.username) ?? "Unknown",
+                "title": (track?.title) ?? "Unknown",
+                "playbackDuration": TimeInterval(exactly: track!.duration! / 1000)!,
+                "bookmarkTime": TimeInterval(exactly: 0.0)!,
+                MPNowPlayingInfoPropertyIsLiveStream: 0.0
+            ]
         }
         let playerItem = AVPlayerItem.init(url: url)
         NotificationCenter.default.addObserver(self, selector: #selector(self.playerDidFinishPlaying(sender:)),
@@ -790,7 +860,7 @@ class ViewController: NSViewController{
         } else {
             ViewController.player.play()
         }
-        ViewController.mainDisplayState = .song
+        ViewController.mainDisplayState = .frequency
         setPlaybackControllerState(to: .playing)
         if ViewController.player.error != nil{
             setSystemStatus(to: .error)
@@ -816,6 +886,7 @@ class ViewController: NSViewController{
         else{
             setSystemStatus(to: .active)
             setPlaybackControllerState(to: .playing)
+            ViewController.controlCenterInfo.playbackState = .playing
         }
     }
     
@@ -882,10 +953,9 @@ class ViewController: NSViewController{
                         self.switchFrequency(to: ViewController.retrievedFrequencies[0], index: 0)
                         if log { self.tprint("SUCCESS") }
                         if log {self.tprint("Retrieved " + String(ViewController.retrievedFrequencies.count) + " frequencies") }
-                        if obj.message != nil { self.tprint(obj.message!, raw: true) }
-                        AutomneAxioms.messages.append(obj.message ?? "Hey there")
-                        self.TBLabel.stringValue = obj.message ?? "Ready"
-                        AutomneAxioms.specialNarratives.append(contentsOf: obj.narratives ?? [])
+                        self.tprint(obj.narratives![0])
+                        self.TBLabel.stringValue = obj.narratives![0]
+                        AutomneAxioms.messages.append(contentsOf: obj.narratives ?? [])
                         self.tprint("******", raw: true)
                         self.tprint("Ready")
                         if ViewController.defaults.integer(forKey: "appearance") == 0{
@@ -1103,6 +1173,9 @@ class ViewController: NSViewController{
     func removeImage(){
         terminalImage.image = nil
         ViewController.terminalImagePlaylistServed = false
+        if ViewController.controlCenterInfo.nowPlayingInfo != nil {
+            ViewController.controlCenterInfo.nowPlayingInfo!["artwork"] = .none
+        }
     }
     func hideImage(){
         terminalImage.isHidden = true
@@ -1114,6 +1187,8 @@ class ViewController: NSViewController{
     func checkAndInvokeImage(){
         if ViewController.currentTrack != nil && !ViewController.inMenu{
             switch ViewController.defaults.integer(forKey: "artwork") {
+            case 0:
+                self.removeImage()
             case 1:
                 if ViewController.currentTrack!.artwork_url != nil{
                     self.loadImage(from: URL(string: ((ViewController.currentTrack!.artwork_url)?.replacingOccurrences(of: "large", with: "t500x500"))!)!)
@@ -1134,7 +1209,12 @@ class ViewController: NSViewController{
                 return
             }
             DispatchQueue.main.async {
-                self.terminalImage.image = NSImage(data: data)
+                let image = NSImage(data: data)
+                self.terminalImage.image = image
+                let CCArtwork = MPMediaItemArtwork.init(boundsSize: image!.size, requestHandler: { (size) -> NSImage in
+                    return image!
+                })
+                ViewController.controlCenterInfo.nowPlayingInfo!["artwork"] = CCArtwork
             }
         }
     }
