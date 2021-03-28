@@ -613,7 +613,7 @@ class ViewController: NSViewController{
         
         if ViewController.playbackControllerState == .playing{
             let b = playbackControllerLight_play.isHidden
-            if ViewController.player.reasonForWaitingToPlay != nil{
+            if ViewController.player.reasonForWaitingToPlay != nil {
                 ViewController.player.playImmediately(atRate: 1.0)
                 playbackControllerLight_loading.isHidden = false
                 if ViewController.playerWaitingTimeoutTimer == nil
@@ -637,7 +637,7 @@ class ViewController: NSViewController{
             }
         }
         
-        if (ViewController.systemStatus == .active) && ViewController.mainDisplayState == .time{
+        if ViewController.systemStatus == .active && ViewController.playbackControllerState != .error && ViewController.mainDisplayState == .time{
             var stdv: String?
             if ViewController.sleepTimer != nil && ViewController.sleepTimer.isValid{
                 let c = Int(floor(Date.init().distance(to: ViewController.sleepTimer.fireDate)))
@@ -670,7 +670,6 @@ class ViewController: NSViewController{
             TBStatusLight.image = NSImage.init(named: "StatusLight_error")
             setFreqLabel(to: "ERR")
             setPlaybackLabel(to: "ERR")
-            TBLabel.stringValue = "ERROR"
             AutomneCore.notify(title: "🆘 System error encountered")
         default:
             statusLight.image = NSImage.init(named: "StatusLight_" + to.rawValue)
