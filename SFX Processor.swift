@@ -23,6 +23,7 @@ class SFX {
     }
     
     public static func playSFX(sfx: Effects){
+        print(AVSpeechSynthesisVoice.speechVoices())
         if let url = Bundle.main.url(forResource: sfx.rawValue, withExtension: "mp3", subdirectory: "SFX") {
             do {
                 player = try AVAudioPlayer(contentsOf: url)
@@ -48,6 +49,7 @@ class SFX {
     }
     
     public static func speak(say: String, lang: String) {
+        testVoices()
         let utterance = AVSpeechUtterance(string: say)
         switch lang {
             case "en":
@@ -66,6 +68,13 @@ class SFX {
                     }
                 }
                 utterance.voice = AVSpeechSynthesisVoice(identifier: voiceIdentifier!)
+            case "ru-RU":
+                let d = "com.apple.speech.synthesis.voice.milena.premium"
+                if AVSpeechSynthesisVoice(identifier: d) != nil {
+                    utterance.voice = AVSpeechSynthesisVoice(identifier: d)
+                } else {
+                    utterance.voice = AVSpeechSynthesisVoice(language: lang)
+                }
             default:
                 utterance.voice = AVSpeechSynthesisVoice(language: lang)
         }
@@ -78,11 +87,12 @@ class SFX {
     }
     
     public static func speakWelcome(){
-        speak(say: AutomneAxioms.specialWelcomeNarratives.randomElement()!, lang: "en")
+        speak(say: "Добрый день", lang: "ru-RU")
+//        speak(say: AutomneAxioms.specialWelcomeNarratives.randomElement()!, lang: "en")
     }
     
-    public static func composeAndSpeak(track: String, artist: String) -> Bool {
-        if synth.isSpeaking { return false }
+    public static func composeAndSpeak(track: String, artist: String) -> (Bool, String?) {
+        if synth.isSpeaking { return (false, "already speaking") }
         let a = Int.random(in: 1...8)
         if a == 1 || a == 2 {
             let s = AutomneAxioms.trackNarratives.randomElement()
@@ -91,7 +101,7 @@ class SFX {
             let lang: String
             if d.isLatin { lang = "en" }
             else if d.isCyrillic { lang = "ru-RU" }
-            else { return false }
+            else { return (false, "difficult phrase: " + d) }
             if s!.1 { speak(say: f, lang: "en") }
             speak(say: d, lang: lang)
             if !s!.1 { speak(say: f, lang: "en") }
@@ -114,7 +124,7 @@ class SFX {
                     case 20...23:
                         d = "evening"
                     default:
-                        return false
+                        return (false, "hour err")
                 }
                 s = AutomneAxioms.specialTimeNarratives[d]!.randomElement()!
             }
@@ -123,11 +133,11 @@ class SFX {
             } else if s.isCyrillic {
                 speak(say: s, lang: "ru-RU")
             } else {
-                return false
+                return (false, "difficult phrase: " + s)
             }
         } else {
-            return false
+            return (false, "rnd case")
         }
-        return true
+        return (true, nil)
     }
 }

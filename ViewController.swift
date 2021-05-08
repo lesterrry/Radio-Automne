@@ -856,10 +856,14 @@ class ViewController: NSViewController{
         ViewController.player.volume = 1.0
         
         if ViewController.defaults.integer(forKey: "narrator") == 1 && !isStream {
-            if SFX.composeAndSpeak(track: (track!.title ?? "unknown"), artist: (track!.user?.username) ?? "unknown") {
+            let a = SFX.composeAndSpeak(track: (track!.title ?? "unknown"), artist: (track!.user?.username) ?? "unknown")
+            if a.0 {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4.0, execute: { ViewController.player.play() })
             } else {
                 ViewController.player.play()
+                if ViewController.defaults.integer(forKey: "verbose") == 1 {
+                    tprint("WARN: (synth) \(a.1 ?? "nil")")
+                }
             }
         } else {
             ViewController.player.play()
