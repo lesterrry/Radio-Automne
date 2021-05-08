@@ -25,6 +25,7 @@ Power is applied by pressing the ON/STANDBY button. Machine immediately starts b
 ### 2. Managing frequencies
 Frequencies are controlled using ‘Frequency Control’ module. Main Display always shows selected frequency’s name. Try pressing Up and Down buttons, this will guide you through retrieved frequencies. To understand tuned frequency, pay attention to the Tune indicator: if module is successfully tuned, indicator turns green. If module is currently performing frequency tuning, the same indicator turns red. If indicator is off, selected frequency is not being used. To tune in to such frequency, press Set button when selected.
 >Note: The New indicator switches on in case selected frequency has been added to the registry recently.
+
 >Note: The Stream indicator switches on in case selected frequency does not support track identifying, as well as other smart features. Such frequencies are basic Web streams.
 ### 3. Starting playing
 Playback is controlled by Playback Controller. When successfully tuned, machine should be told to start playback by pressing Play button. If pressed while already playing, Play button tells the machine to start playing current track from the very beginning. 
@@ -37,6 +38,7 @@ System status indicator is located underneath Standby button. Colourless indicat
 ### 5. Personalizing the machine
 To precisely set up the machile, user should press Setup button. Thus, a Setup menu will be shown in the Terminal window. Switching between settings is done by preessing Up and Down keys, while their values are set using Right and Left ones.
 >Note: sleep timer function needs your special permission if running for the first time.
+
 >Note: in order for Narrator feature to work properly, make sure you have installed corresponding voice synthesizers. Ava Premium is recommended for English, and Milena Premium for Russian. Download them in MacOS Universal Access settings.
 
 Keyboard operation:
