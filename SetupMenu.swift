@@ -18,7 +18,7 @@ struct SetupMenu {
     var elements: [SetupMenuElement]
     var selected: Int
     func getRaw() -> String{
-        var n = "   *** USE KEYBOARD ***\n"
+        var n = "   *** USE ARROW KEYS ***\n"
         var i = 1
         for e in self.elements{
             e.isAction ?

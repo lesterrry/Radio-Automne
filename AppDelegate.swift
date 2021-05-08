@@ -17,6 +17,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
     }
+    
+//    MARK: To do in the future but it sucks now because of all the instances and stuff
+//    func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
+//        let myMenu = NSMenu(title: "MyMenu")
+//        let myMenuItem = NSMenuItem(title: "Toggle", action: #selector(self.playPause), keyEquivalent: "")
+//        myMenu.addItem(myMenuItem)
+//        return myMenu
+//    }
+//
+//    @objc func playPause(){
+//        if ViewController.playbackControllerState == .paused {
+//            ViewController.resume()
+//        } else if ViewController.playbackControllerState == .playing {
+//            ViewController.pause()
+//        }
+//    }
 
     @IBAction func nightModePressed(_ sender: Any) {
         switch nightModeMenuItem.state{

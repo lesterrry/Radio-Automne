@@ -135,7 +135,13 @@ class AutomneAxioms{
         "Общаясь с ним, иногда ловишь себя на мысли, что ходишь по кругу",
         "Кассетная камера всегда под рукой",
         "Magic happens when cassettes are being recorded",
-        "Hold on, let me find my walkman"
+        "Hold on, let me find my walkman",
+        "I dream of you almost every night",
+        "I am just a freak",
+        "I'm standing face to face with the king of the underground",
+        "I used to have a radio show",
+        "There's just a certain culture when you're young",
+        "Некрасовский Круг преображается поздним вечером"
     ]
     
     public static let trackNarratives = [
@@ -203,12 +209,22 @@ class AutomneAxioms{
         "Welcome back",
         "Glad to see you",
         "Hello my friend",
-        "Seeing you is always a pleasure"
+        "Seeing you is always a pleasure",
+        "Hey",
+        "Hello",
+        "Hi my friend",
+        "I missed your company",
+        "What are we listening to today?",
+        "I'm here for you",
+        "I'm virtually hugging you right now",
+        "You look great today",
+        "Hey cutie",
+        "How it goes, dear?"
     ]
     
-    public static func uniq<S : Sequence, T : Equatable>(source: S) -> [T] where S.Iterator.Element == T {
+    public static func uniq<S : Sequence, T : Equatable>(source: S, from: [T]? = nil) -> [T] where S.Iterator.Element == T {
         var buffer = [T]()
-        var added = [T]()
+        var added = from ?? [T]()
         for elem in source {
             if !added.contains(elem) {
                 buffer.append(elem)

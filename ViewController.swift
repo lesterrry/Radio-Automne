@@ -143,18 +143,13 @@ class ViewController: NSViewController{
                     SetupMenu.SetupMenuElement(
                         title: "Auto DeepWave",
                         value: ViewController.defaults.integer(forKey: "deepwave"),
-                        bounds: (0,1),
+                        bounds: (0,4),
                         isAction: false),
                     SetupMenu.SetupMenuElement(
                         title: "Verbose",
                         value: ViewController.defaults.integer(forKey: "log"),
                         bounds: (0,1),
                         isAction: false),
-                    SetupMenu.SetupMenuElement(
-                        title: "[SLEEP TEST]",
-                        value: 0,
-                        bounds: (0,1),
-                        isAction: true),
                     SetupMenu.SetupMenuElement(
                         title: "Narrator",
                         value: ViewController.defaults.integer(forKey: "narrator"),
@@ -189,7 +184,7 @@ class ViewController: NSViewController{
     }
     @IBAction func diveClicked(_ sender: Any) {
         if ViewController.systemStatus == .active && (ViewController.setFrequency == nil || !(ViewController.setFrequency?.isStream ?? true)){
-            initDeepwave(with: ViewController.currentTrack!, append: false)
+            initDeepwave(with: ViewController.currentTrack!)
         }
     }
     
@@ -239,9 +234,29 @@ class ViewController: NSViewController{
     //*********************************************************************
     override func viewDidAppear() {
         super.viewDidAppear()
+        
+//        MARK: This would be worth implementing in case i add Favourites in the future. Anyway it wont work now and is possibly iOS-only.
+//        ViewController.controlCenter.likeCommand.addTarget {_ in
+//            return .success
+//        }
+//        ViewController.controlCenter.likeCommand.isEnabled = true
+        ViewController.controlCenter.togglePlayPauseCommand.addTarget{_ in
+            if ViewController.playbackControllerState == .paused {
+                self.resume()
+                return .success
+            } else if ViewController.playbackControllerState == .playing {
+                self.pause()
+                return .success
+            } else {
+                return .commandFailed
+            }
+        }
         ViewController.controlCenter.playCommand.addTarget {_ in
             if ViewController.playbackControllerState == .paused {
                 self.resume()
+                ViewController.controlCenterInfo.nowPlayingInfo!["MPNowPlayingInfoPropertyElapsedPlaybackTime"] = ViewController.player.currentTime().seconds
+                return .success
+            } else if ViewController.playbackControllerState == .playing{
                 return .success
             } else {
                 return .commandFailed
@@ -250,6 +265,9 @@ class ViewController: NSViewController{
         ViewController.controlCenter.pauseCommand.addTarget {_ in
             if ViewController.playbackControllerState == .playing {
                 self.pause()
+                ViewController.controlCenterInfo.nowPlayingInfo!["MPNowPlayingInfoPropertyElapsedPlaybackTime"] = ViewController.player.currentTime().seconds
+                return .success
+            } else if ViewController.playbackControllerState == .paused{
                 return .success
             } else {
                 return .commandFailed
@@ -365,7 +383,7 @@ class ViewController: NSViewController{
         {
             if ViewController.inMenu {
                 tclear()
-                ViewController.smenu = ViewController.smenu.increment([{},{},{},{},{},{},AutomneCore.systemSleepCheck])
+                ViewController.smenu = ViewController.smenu.increment([])
                 tprint(ViewController.smenu.getRaw(), raw: true, noBreak: true, noWipe: true)
             } else {
                 if ViewController.systemStatus == .active && (ViewController.setFrequency == nil || !(ViewController.setFrequency?.isStream ?? true)){
@@ -456,23 +474,9 @@ class ViewController: NSViewController{
         ViewController.defaults.set(ViewController.smenu.elements[0].value, forKey: "artwork")
         ViewController.defaults.set(ViewController.smenu.elements[1].value, forKey: "appearance")
         ViewController.defaults.set(ViewController.smenu.elements[2].value, forKey: "qboot")
+        ViewController.defaults.set(ViewController.smenu.elements[4].value, forKey: "deepwave")
         ViewController.defaults.set(ViewController.smenu.elements[5].value, forKey: "log")
-        ViewController.defaults.set(ViewController.smenu.elements[7].value, forKey: "narrator")
-        let v = ViewController.smenu.elements[4].value
-        if ViewController.defaults.integer(forKey: "deepwave") != v && ViewController.setFrequency != nil && ViewController.playableQueue.count > 0{
-            if v == 1{
-                self.initDeepwave(with: ViewController.playableQueue.randomElement()!)
-            } else {
-                var npq: [Tracks] = []
-                for i in ViewController.playableQueue{
-                    if !(i.deepWave ?? false){
-                        npq.append(i)
-                    }
-                }
-                ViewController.playableQueue = npq
-            }
-        }
-        ViewController.defaults.set(v, forKey: "deepwave")
+        ViewController.defaults.set(ViewController.smenu.elements[6].value, forKey: "narrator")
         ViewController.inMenu = false
         trestore()
         if log { tprint("Configuration saved") }
@@ -552,9 +556,6 @@ class ViewController: NSViewController{
                 }
                 self.tprint("[QUICK BOOT]", raw: true)
                 self.retrieveFrequencies()
-                if ViewController.defaults.integer(forKey: "narrator") == 1 {
-                    SFX.speakWelcome()
-                }
             }
         }
         if appVersion != ViewController.defaults.string(forKey: "version"){
@@ -621,15 +622,16 @@ class ViewController: NSViewController{
                     ViewController.playerWaitingTimeoutTimer = Timer.scheduledTimer(timeInterval: 10.0, target: self, selector: #selector(self.playerWaitingTimeout), userInfo: nil, repeats: false)
                 }
             } else {
+                ViewController.playerWaitingTimeoutTimer?.invalidate()
                 playbackControllerLight_loading.isHidden = true
                 playbackControllerLight_deepwave.isHidden = !(ViewController.currentTrack?.deepWave ?? false)
-                if ViewController.sleepTimer != nil && ViewController.sleepTimer.isValid{
+                if ViewController.sleepTimer != nil && ViewController.sleepTimer.isValid {
                     playbackControllerLight_sleep.isHidden = false
                 }
                 else{
                     playbackControllerLight_sleep.isHidden = true
                 }
-                if ViewController.setFrequency != nil && ViewController.setFrequency!.isStream ?? true{
+                if ViewController.setFrequency != nil && ViewController.setFrequency!.isStream ?? true {
                     playbackControllerLight_stream.isHidden = false
                 } else {
                     playbackControllerLight_play.isHidden = !b
@@ -747,6 +749,7 @@ class ViewController: NSViewController{
             AutomneCore.notify(title: "🆘 Playback error encountered")
             ViewController.controlCenterInfo.playbackState = .stopped
             ViewController.controlCenterInfo.nowPlayingInfo = .none
+            removeImage()
         case .none:
             playbackControllerLight_play.isHidden = true
             playbackControllerLight_pause.isHidden = true
@@ -770,18 +773,16 @@ class ViewController: NSViewController{
             play(from: ViewController.playbackIndex + 1)
         } else {
             ViewController.playableQueue.shuffle()
-            initDeepwave(with: ViewController.playableQueue.randomElement()!)
             tprint("Stream was mixed (1)")
             play(from: 0)
         }
     }
     func reverse(){
         setSystemStatus(to: .busy)
-        if ViewController.playbackIndex > 0{
+        if ViewController.playbackIndex > 0 {
             play(from: ViewController.playbackIndex - 1)
         } else if ViewController.currentTrack != nil {
             ViewController.playableQueue.shuffle()
-            initDeepwave(with: ViewController.playableQueue.randomElement()!)
             tprint("Stream was mixed (2)")
             play(from: 0)
         }
@@ -834,6 +835,8 @@ class ViewController: NSViewController{
             DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: {
                 self.checkAndInvokeImage()
             })
+            
+            let a = ViewController.controlCenterInfo.nowPlayingInfo?["artwork"]
             ViewController.controlCenterInfo.nowPlayingInfo = [
                 "mediaType": MPMediaType.music,
                 "albumTitle": (ViewController.setFrequency?.name) ?? "Deepwave",
@@ -841,8 +844,9 @@ class ViewController: NSViewController{
                 "title": (track?.title) ?? "Unknown",
                 "playbackDuration": TimeInterval(exactly: track!.duration! / 1000)!,
                 "bookmarkTime": TimeInterval(exactly: 0.0)!,
-                MPNowPlayingInfoPropertyIsLiveStream: 0.0
+                MPNowPlayingInfoPropertyIsLiveStream: 0.0,
             ]
+            ViewController.controlCenterInfo.nowPlayingInfo!["artwork"] = a ?? .none
         }
         let playerItem = AVPlayerItem.init(url: url)
         NotificationCenter.default.addObserver(self, selector: #selector(self.playerDidFinishPlaying(sender:)),
@@ -850,7 +854,8 @@ class ViewController: NSViewController{
                                                object: playerItem)
         ViewController.player = AVPlayer.init(playerItem: playerItem)
         ViewController.player.volume = 1.0
-        if ViewController.defaults.integer(forKey: "narrator") == 1 && !isStream{
+        
+        if ViewController.defaults.integer(forKey: "narrator") == 1 && !isStream {
             if SFX.composeAndSpeak(track: (track!.title ?? "unknown"), artist: (track!.user?.username) ?? "unknown") {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4.0, execute: { ViewController.player.play() })
             } else {
@@ -858,6 +863,14 @@ class ViewController: NSViewController{
             }
         } else {
             ViewController.player.play()
+        }
+        
+        let b = ViewController.defaults.integer(forKey: "deepwave")
+        if b != 0 && !isStream && !(track!.deepWave ?? false) {
+            let c = Int.random(in: 1...(10 - (b * 2)))
+            if c == 1 {
+                initDeepwave(with: track!, add: true)
+            }
         }
         ViewController.mainDisplayState = .frequency
         setPlaybackControllerState(to: .playing)
@@ -890,7 +903,7 @@ class ViewController: NSViewController{
     }
     
     ///API
-    func initDeepwave(with: Tracks, append: Bool = true){
+    func initDeepwave(with: Tracks, add: Bool = false){
         let url = URL(
             string: with.uri! + AutomneAxioms.SCDeepWaveQueue + AutomneAxioms.SCTailQueue + AutomneKeys.scKey
             )!
@@ -906,15 +919,25 @@ class ViewController: NSViewController{
                     for i in 0..<obj.count{
                         obj[i].deepWave = true
                     }
-                    obj = AutomneAxioms.uniq(source: obj)
-                    self.fillQueue(with: obj, append: append)
-                    self.tprint(String(obj.count) + " tracks by DeepWave")
-                    ViewController.deepWaveInitiator = with
-                    if !append{
+                    obj = AutomneAxioms.uniq(source: obj, from: ViewController.playableQueue)
+                    if add {
+                        let o: [Tracks]
+                        if obj.count > 3 {
+                            o = Array(obj.shuffled()[0...2])
+                        } else {
+                            o = obj.shuffled()
+                        }
+                        self.fillQueue(with: o, insert: ViewController.playbackIndex + 1, shuffle: false)
+                    } else {
+                        self.fillQueue(with: obj, append: false)
+                        self.tprint(String(obj.count) + " tracks by DeepWave")
+                        ViewController.deepWaveInitiator = with
                         ViewController.setFrequencyIndex = -1
                         ViewController.setFrequency = nil
+                        ViewController.playbackIndex = 0
+                        
                         self.setFreqLight(to: .unknown)
-                        self.advance()
+                        self.play(from: 0, init: false)
                     }
                 }
                 catch{
@@ -968,6 +991,11 @@ class ViewController: NSViewController{
                         }
                         self.setSystemStatus(to: .unset)
                         SFX.shutUp()
+                        DispatchQueue.main.asyncAfter(deadline: .now() +  1){
+                            if ViewController.defaults.integer(forKey: "narrator") == 1 {
+                                SFX.speakWelcome()
+                            }
+                        }
                     }
                     if ViewController.defaults.integer(forKey: "qboot") == 0{
                         DispatchQueue.main.asyncAfter(deadline: .now() +  2){
@@ -979,7 +1007,7 @@ class ViewController: NSViewController{
                 }
                 catch{
                     self.tprint("ERROR4: " + error.localizedDescription)
-                    print(error)
+                    self.tprint("Please check for updates at automne.aydar.media/release")
                     self.setSystemStatus(to: AutomneProperties.SystemStatus.error)
                     SFX.shutUp()
                 }
@@ -1030,12 +1058,10 @@ class ViewController: NSViewController{
                     let decoder = JSONDecoder()
                     let obj = try decoder.decode(Playlist.self, from: response.data!)
                     let task = {
-                        let def = (ViewController.defaults.integer(forKey: "deepwave") == 0 ? false : true)
                         if obj.tracks != nil{
                             if log { self.tprint("SUCCESS") }
-                            self.fillQueue(with: obj.tracks!, shuffle: !def)
-                            if def { self.initDeepwave(with: obj.tracks!.randomElement()!) }
-                            //TODO: Это костыль, переписать playable queue
+                            self.fillQueue(with: obj.tracks!, shuffle: true)
+                            //MARK: Это костыль, переписать playable queue
                             ViewController.playlist = obj
                             self.setSystemStatus(to: AutomneProperties.SystemStatus.ready)
                             self.setPlaybackLabel(to: "Ready")
@@ -1072,8 +1098,14 @@ class ViewController: NSViewController{
     }
     
     ///Playback queue
-    func fillQueue(with: [Tracks], append: Bool = false, shuffle: Bool = true){
-        append ? ViewController.playableQueue.append(contentsOf: with) : (ViewController.playableQueue = with)
+    func fillQueue(with: [Tracks], append: Bool = false, insert: Int = -1, shuffle: Bool = true){
+        if append {
+            ViewController.playableQueue.append(contentsOf: with)
+        } else if insert != -1 {
+            ViewController.playableQueue.insert(contentsOf: with, at: insert)
+        } else {
+            (ViewController.playableQueue = with)
+        }
         if shuffle { ViewController.playableQueue.shuffle() }
     }
     
@@ -1087,7 +1119,7 @@ class ViewController: NSViewController{
     func setFreqLabel(to: String){
         frequencyControllerLabel.stringValue = to
     }
-    func setFreqLight(to: AutomneProperties.FrequencyControllerState, new: Bool = false, stream: Bool = false){
+    func setFreqLight(to: AutomneProperties.FrequencyControllerState, new: Bool? = nil, stream: Bool? = nil){
         switch to {
         case .unknown:
             frequencyControllerLight_tune.isHidden = true
@@ -1098,8 +1130,8 @@ class ViewController: NSViewController{
             frequencyControllerLight_tune.isHidden = false
             frequencyControllerLight_tune.image = NSImage.init(named: "FreqContLight_tuned")
         }
-        frequencyControllerLight_new.isHidden = !new
-        frequencyControllerLight_stream.isHidden = !stream
+        if new != nil { frequencyControllerLight_new.isHidden = !new! }
+        if stream != nil { frequencyControllerLight_stream.isHidden = !stream! }
     }
     
     ///Main display
@@ -1189,8 +1221,10 @@ class ViewController: NSViewController{
             case 0:
                 self.removeImage()
             case 1:
-                if ViewController.currentTrack!.artwork_url != nil{
+                if ViewController.currentTrack!.artwork_url != nil {
                     self.loadImage(from: URL(string: ((ViewController.currentTrack!.artwork_url)?.replacingOccurrences(of: "large", with: "t500x500"))!)!)
+                } else {
+                    self.removeImage()
                 }
             case 2:
                 if ViewController.playlist?.artwork_url != nil && !ViewController.terminalImagePlaylistServed{
@@ -1213,7 +1247,7 @@ class ViewController: NSViewController{
                 let CCArtwork = MPMediaItemArtwork.init(boundsSize: image!.size, requestHandler: { (size) -> NSImage in
                     return image!
                 })
-                ViewController.controlCenterInfo.nowPlayingInfo!["artwork"] = CCArtwork
+                ViewController.controlCenterInfo.nowPlayingInfo?["artwork"] = CCArtwork
             }
         }
     }
