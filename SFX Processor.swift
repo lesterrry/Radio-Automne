@@ -49,7 +49,6 @@ class SFX {
     }
     
     public static func speak(say: String, lang: String) {
-        testVoices()
         let utterance = AVSpeechUtterance(string: say)
         switch lang {
             case "en":
@@ -87,8 +86,7 @@ class SFX {
     }
     
     public static func speakWelcome(){
-        speak(say: "Добрый день", lang: "ru-RU")
-//        speak(say: AutomneAxioms.specialWelcomeNarratives.randomElement()!, lang: "en")
+        speak(say: AutomneAxioms.specialWelcomeNarratives.randomElement()!, lang: "en")
     }
     
     public static func composeAndSpeak(track: String, artist: String) -> (Bool, String?) {
