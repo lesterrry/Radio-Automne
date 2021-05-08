@@ -37,7 +37,7 @@ System status indicator is located underneath Standby button. Colourless indicat
 ### 5. Personalizing the machine
 To precisely set up the machile, user should press Setup button. Thus, a Setup menu will be shown in the Terminal window. Switching between settings is done by preessing Up and Down keys, while their values are set using Right and Left ones.
 >Note: sleep timer function needs your special permission if running for the first time.
->Note: in order for Narrator feature to work properly, make sure you have installed corresponding voice synthesizers. Ava is recommended for English, and Default Women's Siri for Russian. Download them in MacOS Universal Access settings.
+>Note: in order for Narrator feature to work properly, make sure you have installed corresponding voice synthesizers. Ava Premium is recommended for English, and Milena Premium for Russian. Download them in MacOS Universal Access settings.
 
 Keyboard operation:
 
