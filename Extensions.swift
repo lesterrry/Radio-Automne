@@ -21,7 +21,7 @@ extension String {
     }
 
     var isCyrillic: Bool {
-        let set = "абвгдежзийклмнопрстуфхцчшщьюя,.!?- "
+        let set = "абвгдежзийклмнопрстуфхцчшщьъыэюя,.!?- "
 
         for c in self.map({ String($0) }) {
             if !set.contains(c.lowercased()) {

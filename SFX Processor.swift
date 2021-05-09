@@ -91,7 +91,7 @@ class SFX {
     
     public static func composeAndSpeak(track: String, artist: String) -> (Bool, String?) {
         if synth.isSpeaking { return (false, "already speaking") }
-        let a = Int.random(in: 1...8)
+        let a = Int.random(in: 1...7)
         if a == 1 || a == 2 {
             let s = AutomneAxioms.trackNarratives.randomElement()
             let d = a == 1 ? track : artist

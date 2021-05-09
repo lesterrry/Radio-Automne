@@ -841,7 +841,7 @@ class ViewController: NSViewController{
                 "mediaType": MPMediaType.music,
                 "albumTitle": (ViewController.setFrequency?.name) ?? "Deepwave",
                 "artist": (track?.user?.username) ?? "Unknown",
-                "title": (track?.title) ?? "Unknown",
+                "title": ((track!.deepWave ?? false) ? "🌀 " : "") + ((track?.title) ?? "Unknown"),
                 "playbackDuration": TimeInterval(exactly: track!.duration! / 1000)!,
                 "bookmarkTime": TimeInterval(exactly: 0.0)!,
                 MPNowPlayingInfoPropertyIsLiveStream: 0.0,
@@ -861,7 +861,7 @@ class ViewController: NSViewController{
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4.0, execute: { ViewController.player.play() })
             } else {
                 ViewController.player.play()
-                if ViewController.defaults.integer(forKey: "verbose") == 1 {
+                if ViewController.defaults.integer(forKey: "log") == 1 {
                     tprint("WARN: (synth) \(a.1 ?? "nil")")
                 }
             }
@@ -871,8 +871,8 @@ class ViewController: NSViewController{
         
         let b = ViewController.defaults.integer(forKey: "deepwave")
         if b != 0 && !isStream && !(track!.deepWave ?? false) {
-            let c = Int.random(in: 1...(10 - (b * 2)))
-            if c == 1 {
+            let c = Int.random(in: 0...(10 - (b * 2)))
+            if c == 0 || c == 1 {
                 initDeepwave(with: track!, add: true)
             }
         }
