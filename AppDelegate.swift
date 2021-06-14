@@ -34,6 +34,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 //        }
 //    }
 
+    @IBAction func visitJunoPressed(_ sender: Any) {
+        NSWorkspace.shared.open(URL(string: "https://github.com/Lesterrry/Juno")!)
+    }
     @IBAction func nightModePressed(_ sender: Any) {
         switch nightModeMenuItem.state{
             case .off:

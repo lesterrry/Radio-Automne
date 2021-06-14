@@ -43,6 +43,7 @@ class ViewController: NSViewController{
     @IBOutlet weak var frequencyControllerLight_stream: NSImageView!
     @IBOutlet weak var frequencyControllerLight_tune: NSImageView!
     @IBOutlet weak var frequencyControllerLight_new: NSImageView!
+    @IBOutlet weak var frequencyControllerLight_memory: NSImageView!
     @IBOutlet weak var glitchStripe: NSImageView!
     @IBOutlet weak var playbackControllerLight_play: NSImageView!
     @IBOutlet weak var playbackControllerLight_sleep: NSImageView!
@@ -58,7 +59,7 @@ class ViewController: NSViewController{
     //*********************************************************************
     ///Frequency Controller
     @IBAction func freqControlUpClicked(_ sender: Any) {
-        if ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
+        if ViewController.systemStatus != .busy && ViewController.systemStatus != .standby {
             let i = ViewController.selectedFrequencyIndex
             if i < ViewController.retrievedFrequencies.count - 1 {
                 switchFrequency(to: ViewController.retrievedFrequencies[i + 1], index: i + 1)
@@ -66,7 +67,7 @@ class ViewController: NSViewController{
         }
     }
     @IBAction func freqControlDownClicked(_ sender: Any) {
-        if ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
+        if ViewController.systemStatus != .busy && ViewController.systemStatus != .standby {
             let i = ViewController.selectedFrequencyIndex
             if i > 0 {
                 switchFrequency(to: ViewController.retrievedFrequencies[i - 1], index: i - 1)
@@ -74,7 +75,7 @@ class ViewController: NSViewController{
         }
     }
     @IBAction func freqControlSetClicked(_ sender: Any) {
-        if ViewController.systemStatus != .busy && ViewController.systemStatus != .standby{
+        if ViewController.systemStatus != .busy && ViewController.systemStatus != .standby && ViewController.systemStatus != .error {
             ViewController.player.pause()
             ViewController.mainDisplayState = .frequency
             let fr = ViewController.selectedFrequency!
@@ -116,8 +117,7 @@ class ViewController: NSViewController{
         }
     }
     @IBAction func setupClicked(_ sender: Any) {
-        if ViewController.systemStatus != .busy && ViewController.systemStatus != .error
-                && ViewController.systemStatus != .standby
+        if ViewController.systemStatus != .busy && ViewController.systemStatus != .standby
                 && !ViewController.inMenu{
                 let els = [
                     SetupMenu.SetupMenuElement(
@@ -141,9 +141,9 @@ class ViewController: NSViewController{
                         bounds: (0,9),
                         isAction: false),
                     SetupMenu.SetupMenuElement(
-                        title: "Auto DeepWave",
-                        value: ViewController.defaults.integer(forKey: "deepwave"),
-                        bounds: (0,4),
+                        title: "Server",
+                        value: ViewController.defaults.integer(forKey: "server"),
+                        bounds: (1,2),
                         isAction: false),
                     SetupMenu.SetupMenuElement(
                         title: "Verbose",
@@ -154,6 +154,16 @@ class ViewController: NSViewController{
                         title: "Narrator",
                         value: ViewController.defaults.integer(forKey: "narrator"),
                         bounds: (0,1),
+                        isAction: false),
+                    SetupMenu.SetupMenuElement(
+                        title: "Deepwave Chance",
+                        value: ViewController.defaults.integer(forKey: "deepwave_chance"),
+                        bounds: (0,4),
+                        isAction: false),
+                    SetupMenu.SetupMenuElement(
+                        title: "Deepwave Count",
+                        value: ViewController.defaults.integer(forKey: "deepwave_count"),
+                        bounds: (1,3),
                         isAction: false)]
                 ViewController.smenu = SetupMenu.get(for: els)
                 tclear(cache: true)
@@ -217,6 +227,7 @@ class ViewController: NSViewController{
     static var terminalCache = ""
     static var currentTrack: Tracks? = nil
     static var deepWaveInitiator: Tracks? = nil
+    static var configFilePath: URL? = nil
     
     //*********************************************************************
     //CONSTS
@@ -228,6 +239,7 @@ class ViewController: NSViewController{
     let fetchLogo = "### ### ### ### # #\n#   #    #  #   # #\n##  ###  #  #   ###\n#   #    #  #   # #\n#   ###  #  ### # #"
     static let states = [MainDisplayState.frequency, MainDisplayState.song, MainDisplayState.artist, MainDisplayState.time]
     static let streamStates = [MainDisplayState.frequency, MainDisplayState.song, MainDisplayState.time]
+    static let fm = FileManager.default
     
     //*********************************************************************
     //FUNCTIONS
@@ -317,6 +329,7 @@ class ViewController: NSViewController{
         allLights = [frequencyControllerLight_new,
                      frequencyControllerLight_tune,
                      frequencyControllerLight_stream,
+                     frequencyControllerLight_memory,
                      playbackControllerLight_play,
                      playbackControllerLight_pause,
                      playbackControllerLight_error,
@@ -324,6 +337,24 @@ class ViewController: NSViewController{
                      playbackControllerLight_sleep,
                      playbackControllerLight_deepwave,
                      playbackControllerLight_stream]
+        ViewController.configFilePath = FileManager().homeDirectoryForCurrentUser.appendingPathComponent("Music/Radio Automne")
+        if let a = ViewController.configFilePath {
+            if !ViewController.fm.fileExists(atPath: a.path) {
+                try? ViewController.fm.createDirectory(atPath: a.path, withIntermediateDirectories: true, attributes: nil)
+                let fp = a.appendingPathComponent("config.json")
+                let jsonData = try? JSONEncoder().encode(CustomFrequencies(frequencies: [Frequency(name: "", reliable: false, num: "", isNew: false, isStream: false, playlistID: "", streamURL: "", streamDescription: "")]))
+                ViewController.fm.createFile(atPath: fp.path, contents: jsonData, attributes: nil)
+                ViewController.configFilePath = fp
+            } else {
+                ViewController.configFilePath = a.appendingPathComponent("config.json")
+            }
+        }
+        if ViewController.defaults.integer(forKey: "appearance") == 0 {
+            ViewController.defaults.set(1, forKey: "appearance")
+            ViewController.defaults.set(1, forKey: "deepwave_count")
+            ViewController.defaults.set(1, forKey: "server")
+            ViewController.defaults.set(2, forKey: "artwork")
+        }
     }
     
     override var representedObject: Any? {
@@ -331,7 +362,7 @@ class ViewController: NSViewController{
     }
     
     ///System
-    func updateAppearance(){
+    func updateAppearance() {
         switch ViewController.defaults.integer(forKey: "appearance") {
         case 0,1:
             volumeKnob.image = NSImage.init(named: "VolumeKnob_1")
@@ -457,7 +488,7 @@ class ViewController: NSViewController{
             let fr = ViewController.selectedFrequency!
             if fr.isStream! {
                 self.startStream(frequency: fr)
-            }else{
+            } else {
                 self.retrieveTracks(frequency: fr)
             }
         }
@@ -465,18 +496,19 @@ class ViewController: NSViewController{
 //            print(event.keyCode)
 //        }
     }
-    func sendToGithub(){
+    func sendToGithub() {
         NSWorkspace.shared.open(URL(string: "https://github.com/Lesterrry/Radio-Automne")!)
-        ViewController.inMenu = false
     }
-    func saveDefaults(){
+    func saveDefaults() {
         let log = ViewController.defaults.integer(forKey: "log") == 1
         ViewController.defaults.set(ViewController.smenu.elements[0].value, forKey: "artwork")
         ViewController.defaults.set(ViewController.smenu.elements[1].value, forKey: "appearance")
         ViewController.defaults.set(ViewController.smenu.elements[2].value, forKey: "qboot")
-        ViewController.defaults.set(ViewController.smenu.elements[4].value, forKey: "deepwave")
+        ViewController.defaults.set(ViewController.smenu.elements[4].value, forKey: "server")
         ViewController.defaults.set(ViewController.smenu.elements[5].value, forKey: "log")
         ViewController.defaults.set(ViewController.smenu.elements[6].value, forKey: "narrator")
+        ViewController.defaults.set(ViewController.smenu.elements[7].value, forKey: "deepwave_chance")
+        ViewController.defaults.set(ViewController.smenu.elements[8].value, forKey: "deepwave_count")
         ViewController.inMenu = false
         trestore()
         if log { tprint("Configuration saved") }
@@ -492,12 +524,12 @@ class ViewController: NSViewController{
             checkAndInvokeImage()
         }
     }
-    @objc func sleep(){
+    @objc func sleep() {
         powerOff()
         AutomneCore.notify(title: "🌌 Good night")
         AutomneCore.systemSleep()
     }
-    func powerOn(){
+    func powerOn() {
         let log = ViewController.defaults.integer(forKey: "log") == 1
         for light in allLights {
             light.isHidden = false
@@ -564,7 +596,7 @@ class ViewController: NSViewController{
         }
     }
     
-    func powerOff(){
+    func powerOff() {
         ViewController.setFrequencyIndex = -1
         ViewController.setFrequency = nil
         ViewController.player = AVPlayer()
@@ -587,7 +619,7 @@ class ViewController: NSViewController{
         ViewController.mainDisplaySwitchTimer.invalidate()
     }
     
-    @objc func tick(){
+    @objc func tick() {
         let sv = ViewController.savedVolume
         let vol = AutomneCore.getSystemVolume()
         if vol != sv && !ViewController.firstCall{
@@ -661,7 +693,7 @@ class ViewController: NSViewController{
         }
     }
     
-    func setSystemStatus(to: AutomneProperties.SystemStatus){
+    func setSystemStatus(to: AutomneProperties.SystemStatus) {
         ViewController.systemStatus = to
         switch to {
         case .active, .ready, .unset:
@@ -701,7 +733,7 @@ class ViewController: NSViewController{
     }
     
     ///Playback Controller
-    @objc func playerWaitingTimeout(){
+    @objc func playerWaitingTimeout() {
         let r = ViewController.player.reasonForWaitingToPlay
         if r != nil{
             if AutomneAxioms.isConnectedToNetwork(){
@@ -721,7 +753,7 @@ class ViewController: NSViewController{
             }
         }
     }
-    func setPlaybackControllerState(to: AutomneProperties.PlaybackControllerState, isStream: Bool = false){
+    func setPlaybackControllerState(to: AutomneProperties.PlaybackControllerState, isStream: Bool = false) {
         switch to {
         case .playing:
             playbackControllerLight_pause.isHidden = true
@@ -767,7 +799,7 @@ class ViewController: NSViewController{
     @objc func playerDidFinishPlaying(sender: Notification) {
         advance()
     }
-    func advance(){
+    func advance() {
         setSystemStatus(to: .busy)
         if ViewController.playbackIndex < ViewController.playableQueue.count - 1{
             play(from: ViewController.playbackIndex + 1)
@@ -777,7 +809,7 @@ class ViewController: NSViewController{
             play(from: 0)
         }
     }
-    func reverse(){
+    func reverse() {
         setSystemStatus(to: .busy)
         if ViewController.playbackIndex > 0 {
             play(from: ViewController.playbackIndex - 1)
@@ -787,7 +819,7 @@ class ViewController: NSViewController{
             play(from: 0)
         }
     }
-    func play(from: Int = 0, init: Bool = false){
+    func play(from: Int = 0, init: Bool = false) {
         var url: URL
         let isStream = (ViewController.setFrequency?.isStream) ?? false
         let track: Tracks?
@@ -869,11 +901,11 @@ class ViewController: NSViewController{
             ViewController.player.play()
         }
         
-        let b = ViewController.defaults.integer(forKey: "deepwave")
+        let b = ViewController.defaults.integer(forKey: "deepwave_chance")
         if b != 0 && !isStream && !(track!.deepWave ?? false) {
             let c = Int.random(in: 0...(10 - (b * 2)))
             if c == 0 || c == 1 {
-                initDeepwave(with: track!, add: true)
+                initDeepwave(with: track!, count: ViewController.defaults.integer(forKey: "deepwave_count"), add: true)
             }
         }
         ViewController.mainDisplayState = .frequency
@@ -907,7 +939,7 @@ class ViewController: NSViewController{
     }
     
     ///API
-    func initDeepwave(with: Tracks, add: Bool = false){
+    func initDeepwave(with: Tracks, count: Int = -1, add: Bool = false) {
         let url = URL(
             string: with.uri! + AutomneAxioms.SCDeepWaveQueue + AutomneAxioms.SCTailQueue + AutomneKeys.scKey
             )!
@@ -926,8 +958,8 @@ class ViewController: NSViewController{
                     obj = AutomneAxioms.uniq(source: obj, from: ViewController.playableQueue)
                     if add {
                         let o: [Tracks]
-                        if obj.count > 3 {
-                            o = Array(obj.shuffled()[0...2])
+                        if obj.count > count {
+                            o = Array(obj.shuffled()[0...count - 1])
                         } else {
                             o = obj.shuffled()
                         }
@@ -956,16 +988,22 @@ class ViewController: NSViewController{
         }
     }
     
-    func retrieveFrequencies(){
+    func retrieveFrequencies() {
         let log = (ViewController.defaults.integer(forKey: "log") == 1) ? true : false
+        var custom: CustomFrequencies? = nil
+        if let a = ViewController.configFilePath {
+            custom = try? JSONDecoder().decode(CustomFrequencies.self, from: FileHandle(forReadingFrom: a).readDataToEndOfFile()).reliable()
+            if log, let c = custom, let cf = c.frequencies, cf.count > 0 { tprint("From memory: \(cf.count)") }
+        }
         SFX.playSFX(sfx: SFX.Effects.radioSetup)
-        tprint(log ? "Connecting to First Responder..." : "Please wait...")
+        tprint(log ? "Connecting via \((ViewController.defaults.integer(forKey: "server") == 1) ? "Silverwing" : "Sprint")" : "Please wait...")
         setFreqLabel(to: "Retrieving...")
         self.setSystemStatus(to: AutomneProperties.SystemStatus.busy)
         self.setPlaybackControllerState(to: .none)
+        let a = ViewController.defaults.integer(forKey: "server")
         let url = URL(
-            string: AutomneAxioms.firstResponderNoseQueue +
-                AutomneKeys.firstResponderKey
+            string: AutomneAxioms.firstResponderNoseQueue[a - 1] +
+                AutomneKeys.firstResponderKey[a - 1]
             )!
         AF.request(url).response { response in
             switch response.result {
@@ -977,19 +1015,12 @@ class ViewController: NSViewController{
                     ViewController.retrievedFrequencies = obj.frequencies!
                     let task = {
                         self.switchFrequency(to: ViewController.retrievedFrequencies[0], index: 0)
-                        if log { self.tprint("SUCCESS") }
-                        if log {self.tprint("Retrieved " + String(ViewController.retrievedFrequencies.count) + " frequencies") }
-                        self.tprint(obj.narratives![0])
+                        if log { self.tprint("Retrieved " + String(ViewController.retrievedFrequencies.count) + " frequencies") }
+                        if let c = custom, let cf = c.frequencies { ViewController.retrievedFrequencies.append(contentsOf: cf) }
+                        self.tprint(obj.narratives![0], raw: true)
                         self.TBLabel.stringValue = obj.narratives![0]
                         AutomneAxioms.messages.append(contentsOf: obj.narratives ?? [])
-                        self.tprint("******", raw: true)
                         self.tprint("Ready")
-                        if ViewController.defaults.integer(forKey: "appearance") == 0{
-                            ViewController.defaults.set(1, forKey: "appearance")
-                            self.tprint("Welcome to Automne!", raw: true)
-                            self.tprint("Check 'automne.aydar.media' for help", raw: true)
-                            ViewController.defaults.set(2, forKey: "artwork")
-                        }
                         if obj.version != self.appVersion && !(self.appVersion?.contains("beta"))!{
                             self.tprint("ATTENTION: Latest version v\(obj.version ?? "?") is available at automne.aydar.media/release")
                         }
@@ -1042,7 +1073,7 @@ class ViewController: NSViewController{
         let log = (ViewController.defaults.integer(forKey: "log") == 1) ? true : false
         ViewController.sleepTimer?.invalidate()
         setPlaybackLabel(to: "")
-        setFreqLight(to: .tuning, new: frequency.isNew!)
+        setFreqLight(to: .tuning, new: frequency.isNew ?? false, memory: frequency.reliable ?? false)
         SFX.playSFX(sfx: SFX.Effects.radioSetup)
         setSystemStatus(to: AutomneProperties.SystemStatus.busy)
         setPlaybackControllerState(to: .none)
@@ -1063,14 +1094,13 @@ class ViewController: NSViewController{
                     let obj = try decoder.decode(Playlist.self, from: response.data!)
                     let task = {
                         if obj.tracks != nil{
-                            if log { self.tprint("SUCCESS") }
                             self.fillQueue(with: obj.tracks!, shuffle: true)
                             //MARK: Это костыль, переписать playable queue
                             ViewController.playlist = obj
                             self.setSystemStatus(to: AutomneProperties.SystemStatus.ready)
                             self.setPlaybackLabel(to: "Ready")
                             SFX.shutUp()
-                            self.setFreqLight(to: .tuned, new: frequency.isNew!)
+                            self.setFreqLight(to: .tuned, new: frequency.isNew ?? false, memory: frequency.reliable ?? false)
                             ViewController.setFrequencyIndex = ViewController.selectedFrequencyIndex
                             ViewController.setFrequency = frequency
                         } else {
@@ -1117,13 +1147,13 @@ class ViewController: NSViewController{
     func switchFrequency(to: Frequency, index: Int){
         ViewController.selectedFrequency = to
         ViewController.selectedFrequencyIndex = index
-        frequencyControllerLabel.stringValue = to.name ?? "Undefined"
-        setFreqLight(to: index == ViewController.setFrequencyIndex ? .tuned : .unknown, new: to.isNew!, stream: to.isStream!)
+        frequencyControllerLabel.stringValue = to.name
+        setFreqLight(to: index == ViewController.setFrequencyIndex ? .tuned : .unknown, new: to.isNew ?? false, stream: to.isStream ?? false, memory: to.reliable ?? false)
     }
     func setFreqLabel(to: String){
         frequencyControllerLabel.stringValue = to
     }
-    func setFreqLight(to: AutomneProperties.FrequencyControllerState, new: Bool? = nil, stream: Bool? = nil){
+    func setFreqLight(to: AutomneProperties.FrequencyControllerState, new: Bool = false, stream: Bool = false, memory: Bool = false){
         switch to {
         case .unknown:
             frequencyControllerLight_tune.isHidden = true
@@ -1134,8 +1164,9 @@ class ViewController: NSViewController{
             frequencyControllerLight_tune.isHidden = false
             frequencyControllerLight_tune.image = NSImage.init(named: "FreqContLight_tuned")
         }
-        if new != nil { frequencyControllerLight_new.isHidden = !new! }
-        if stream != nil { frequencyControllerLight_stream.isHidden = !stream! }
+        frequencyControllerLight_new.isHidden = !new
+        frequencyControllerLight_stream.isHidden = !stream
+        frequencyControllerLight_memory.isHidden = !memory
     }
     
     ///Main display
@@ -1162,7 +1193,7 @@ class ViewController: NSViewController{
             case .artist:
                 setPlaybackLabel(to: "By " + (ViewController.currentTrack!.user?.username ?? "unknown artist"))
             case .frequency:
-                setPlaybackLabel(to: isStream ? (ViewController.setFrequency?.name)! : (ViewController.setFrequencyIndex == -1 ? ("From: " + (ViewController.deepWaveInitiator?.title ?? "unknown")) : (ViewController.setFrequency!.name ?? "Unknown station")))
+                setPlaybackLabel(to: isStream ? (ViewController.setFrequency?.name)! : (ViewController.setFrequencyIndex == -1 ? ("From: " + (ViewController.deepWaveInitiator?.title ?? "unknown")) : (ViewController.setFrequency!.name)))
             default: ()
             }
         }

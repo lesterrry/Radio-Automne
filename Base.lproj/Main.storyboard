@@ -26,7 +26,7 @@
                                         <menuItem title="Created by @lesterrry" enabled="NO" id="NCg-3S-XFx">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                         </menuItem>
-                                        <menuItem title="in Moscow, 2020" enabled="NO" id="7Ci-3Y-qfk">
+                                        <menuItem title="in Moscow, 2020-2021" enabled="NO" id="7Ci-3Y-qfk">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="VOq-y0-SEH"/>
@@ -47,10 +47,31 @@
                                                 <action selector="unhideAllApplications:" target="Ady-hI-5gd" id="Dhg-Le-xox"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="6HA-j3-yhI"/>
+                                        <menuItem title="See Also: Juno" id="Syy-To-thZ">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="visitJunoPressed:" target="Voe-Tx-rLC" id="cf3-8C-yGr"/>
+                                            </connections>
+                                        </menuItem>
                                         <menuItem isSeparatorItem="YES" id="kCx-OE-vgT"/>
                                         <menuItem title="Quit Radio Automne" keyEquivalent="q" id="4sb-4s-VLi">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
                                             <connections>
                                                 <action selector="terminate:" target="Ady-hI-5gd" id="Te7-pn-YzF"/>
+                                            </connections>
+                                        </menuItem>
+                                    </items>
+                                </menu>
+                            </menuItem>
+                            <menuItem title="Stuff" id="yaZ-DU-G0x">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <menu key="submenu" title="Stuff" autoenablesItems="NO" id="ixS-Xe-4t0">
+                                    <items>
+                                        <menuItem title="Night Mode" onStateImage="NSMenuOnStateTemplate" id="qNV-E3-68p">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="nightModePressed:" target="Voe-Tx-rLC" id="Pd1-8W-Red"/>
                                             </connections>
                                         </menuItem>
                                     </items>
@@ -62,7 +83,11 @@
                         <outlet property="delegate" destination="Voe-Tx-rLC" id="PrD-fu-P6m"/>
                     </connections>
                 </application>
-                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Radio_Automne" customModuleProvider="target"/>
+                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Radio_Automne" customModuleProvider="target">
+                    <connections>
+                        <outlet property="nightModeMenuItem" destination="qNV-E3-68p" id="LpQ-BL-xvh"/>
+                    </connections>
+                </customObject>
                 <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -87,7 +112,7 @@
                 </windowController>
                 <customObject id="Oky-zY-oP4" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="123" y="269"/>
+            <point key="canvasLocation" x="144" y="335"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="hIz-AP-VOD">
@@ -158,7 +183,7 @@
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yyr-pi-4Tj" userLabel="Stdby">
                                 <rect key="frame" x="300" y="163" width="119" height="66"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="2tX-O2-jpG">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" sound="Button" inset="2" id="2tX-O2-jpG">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -169,7 +194,7 @@
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Lhk-mg-sfM" userLabel="FrDown">
                                 <rect key="frame" x="31" y="251" width="76" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="pe0-PV-HRv">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" sound="Button" inset="2" id="pe0-PV-HRv">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -177,10 +202,13 @@
                                     <action selector="freqControlDownClicked:" target="XfG-lQ-9wD" id="5vl-CH-HZD"/>
                                 </connections>
                             </button>
-                            <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yy2-9N-7p7" userLabel="FrSet">
+                            <button translatesAutoresizingMaskIntoConstraints="NO" id="yy2-9N-7p7" userLabel="FrSet">
                                 <rect key="frame" x="108" y="251" width="76" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="ouz-O3-fHc">
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="76" id="Wp2-44-MNE"/>
+                                    <constraint firstAttribute="height" constant="35" id="a28-dK-gyF"/>
+                                </constraints>
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" state="on" imageScaling="proportionallyUpOrDown" sound="Button" inset="2" id="ouz-O3-fHc">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -191,7 +219,7 @@
                             <button horizontalHuggingPriority="249" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="FrT-4B-GZc" userLabel="FrUp">
                                 <rect key="frame" x="185" y="251" width="76" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="O0D-BA-AFf">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" sound="Button" inset="2" id="O0D-BA-AFf">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -202,7 +230,7 @@
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Gau-Gj-eiA" userLabel="Play">
                                 <rect key="frame" x="314" y="260" width="62" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="U0h-iw-bkc">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" sound="Button" inset="2" id="U0h-iw-bkc">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -213,7 +241,7 @@
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="nWB-oJ-nHj" userLabel="Pause">
                                 <rect key="frame" x="379" y="260" width="62" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="mEj-3Z-NcV">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" sound="Button" inset="2" id="mEj-3Z-NcV">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -224,7 +252,7 @@
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UTi-A9-AyQ" userLabel="Prev">
                                 <rect key="frame" x="444" y="260" width="62" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="44D-qc-GcQ">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" sound="Button" inset="2" id="44D-qc-GcQ">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -235,7 +263,7 @@
                             <button horizontalHuggingPriority="249" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1nn-ep-myo" userLabel="Next">
                                 <rect key="frame" x="509" y="260" width="62" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="eWF-64-rkP">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" sound="Button" inset="2" id="eWF-64-rkP">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -246,7 +274,7 @@
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vaO-mn-KcM" userLabel="Share">
                                 <rect key="frame" x="574" y="260" width="62" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="cuj-BJ-8nW">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" sound="Button" inset="2" id="cuj-BJ-8nW">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -257,7 +285,7 @@
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="O4Z-cv-zuD" userLabel="Dive">
                                 <rect key="frame" x="639" y="260" width="62" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="k2T-EL-0wL">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" sound="Button" inset="2" id="k2T-EL-0wL">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -274,6 +302,11 @@
                                 <rect key="frame" x="64" y="273" width="61" height="58"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="FreqContLight_new" id="1lq-1R-jOE"/>
+                            </imageView>
+                            <imageView hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mB8-wo-VfV" userLabel="FreqContLight_stream">
+                                <rect key="frame" x="84" y="256" width="91" height="91"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="FreqContLight_stream" id="Ahk-Fw-AFp"/>
                             </imageView>
                             <imageView hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="qTM-uv-UIn" userLabel="PlaybackContLight_play">
                                 <rect key="frame" x="319" y="289" width="48" height="48"/>
@@ -319,7 +352,7 @@
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mO4-tG-IzA" userLabel="SetupButton">
                                 <rect key="frame" x="301" y="39" width="87" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="1Np-n1-vMq">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" sound="Button" inset="2" id="1Np-n1-vMq">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -330,7 +363,7 @@
                             <button fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Uhb-Cc-pnt" userLabel="HelpButton">
                                 <rect key="frame" x="392" y="39" width="87" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" inset="2" id="VgX-nv-Rrf">
+                                <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="only" alignment="center" imageScaling="proportionallyUpOrDown" sound="Button" inset="2" id="VgX-nv-Rrf">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -338,10 +371,10 @@
                                     <action selector="helpClicked:" target="XfG-lQ-9wD" id="D4P-eu-5Td"/>
                                 </connections>
                             </button>
-                            <imageView hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mB8-wo-VfV" userLabel="FreqContLight_stream">
-                                <rect key="frame" x="84" y="256" width="91" height="91"/>
+                            <imageView hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="v7w-jk-DcC" userLabel="FreqContLight_memory">
+                                <rect key="frame" x="130" y="256" width="91" height="91"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="FreqContLight_stream" id="Ahk-Fw-AFp"/>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="FreqContLight_memory" id="COj-Mn-EJM"/>
                             </imageView>
                         </subviews>
                         <constraints>
@@ -350,11 +383,15 @@
                             <constraint firstAttribute="bottom" secondItem="qTM-uv-UIn" secondAttribute="bottom" constant="289" id="MXK-N3-VyL"/>
                             <constraint firstAttribute="trailing" secondItem="aBV-86-dfJ" secondAttribute="trailing" constant="688" id="PNT-nf-ATR"/>
                             <constraint firstAttribute="trailing" secondItem="t3E-66-C1y" secondAttribute="trailing" constant="595" id="SIf-a6-AI1"/>
+                            <constraint firstAttribute="bottom" secondItem="yy2-9N-7p7" secondAttribute="bottom" constant="251" id="Tn4-K7-1FD"/>
                             <constraint firstItem="t3E-66-C1y" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="76" id="ULj-KQ-0pV"/>
                             <constraint firstItem="aBV-86-dfJ" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="76" id="Y9L-pC-sxX"/>
                             <constraint firstAttribute="bottom" secondItem="aBV-86-dfJ" secondAttribute="bottom" constant="319" id="Z1O-1I-bzd"/>
+                            <constraint firstAttribute="trailing" secondItem="yy2-9N-7p7" secondAttribute="trailing" constant="750" id="bgH-vd-EYV"/>
                             <constraint firstAttribute="bottom" secondItem="UVI-nK-ohO" secondAttribute="bottom" constant="49" id="bp1-cV-b9e"/>
                             <constraint firstItem="qTM-uv-UIn" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="73" id="cWN-hQ-5fP"/>
+                            <constraint firstItem="yy2-9N-7p7" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="108" id="dqb-2B-rFd"/>
+                            <constraint firstItem="yy2-9N-7p7" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="124" id="hVB-8s-Fql"/>
                             <constraint firstAttribute="trailing" secondItem="qTM-uv-UIn" secondAttribute="trailing" constant="567" id="isE-AA-TBa"/>
                             <constraint firstItem="UVI-nK-ohO" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="43" id="qEW-Fk-G7U"/>
                             <constraint firstAttribute="trailing" secondItem="UVI-nK-ohO" secondAttribute="trailing" constant="680" id="sXP-hm-3P9"/>
@@ -369,6 +406,7 @@
                         <outlet property="bar" destination="rpS-XU-v84" id="1jy-8D-fdW"/>
                         <outlet property="box" destination="Syu-GY-ojA" id="awR-PA-OMQ"/>
                         <outlet property="frequencyControllerLabel" destination="aBV-86-dfJ" id="KWL-2X-tDO"/>
+                        <outlet property="frequencyControllerLight_memory" destination="v7w-jk-DcC" id="LqA-SS-WoW"/>
                         <outlet property="frequencyControllerLight_new" destination="yUr-m8-ZbN" id="fUc-fo-EU5"/>
                         <outlet property="frequencyControllerLight_stream" destination="mB8-wo-VfV" id="u3S-Np-icl"/>
                         <outlet property="frequencyControllerLight_tune" destination="PYq-Aq-Wpl" id="1Je-uf-WVp"/>
@@ -440,9 +478,11 @@
         </scene>
     </scenes>
     <resources>
+        <image name="FreqContLight_memory" width="391" height="305"/>
         <image name="FreqContLight_new" width="274" height="133"/>
         <image name="FreqContLight_stream" width="391" height="305"/>
         <image name="FreqContLight_tuned" width="391" height="305"/>
+        <image name="NSMenuOnStateTemplate" width="12" height="12"/>
         <image name="PlaybackContLight_deepwave" width="343" height="266"/>
         <image name="PlaybackContLight_error" width="287" height="210"/>
         <image name="PlaybackContLight_loading" width="338" height="182"/>
@@ -453,5 +493,6 @@
         <image name="StatusLight_standby" width="669" height="300"/>
         <image name="TVStripe" width="707" height="155"/>
         <image name="touchBar_img" width="3409" height="338"/>
+        <sound name="Button"/>
     </resources>
 </document>

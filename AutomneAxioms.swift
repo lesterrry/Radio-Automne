@@ -10,7 +10,7 @@ import Foundation
 import SystemConfiguration
 
 class AutomneAxioms{
-    public static let firstResponderNoseQueue = "https://automne.aydar.media/get.php?key="
+    public static let firstResponderNoseQueue = ["https://automne.aydar.media/get.php?key=", "https://sprint.aydar.media/automne/get.php?key="]
     public static let SCNoseQueue = "https://api.soundcloud.com/"
     public static let SCPlaylistQueue = "playlists/"
     public static let SCDeepWaveQueue = "/related"
@@ -141,7 +141,8 @@ class AutomneAxioms{
         "I'm standing face to face with the king of the underground",
         "I used to have a radio show",
         "There's just a certain culture when you're young",
-        "Некрасовский Круг преображается поздним вечером"
+        "Некрасовский Круг преображается поздним вечером",
+        "Сезон дождей не щадит никого"
     ]
     
     public static let trackNarratives = [
