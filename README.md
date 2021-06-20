@@ -2,7 +2,7 @@
 World wide web audio receiving machine
 
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
-[![Release](https://img.shields.io/badge/latest%20release-v1.1.0%20Samoyed-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
+[![Release](https://img.shields.io/badge/latest%20release-v1.1.2%20Samoyed-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 [![SoundCloud](https://img.shields.io/badge/SoundCloud-listen-9cf?style=social&logo=soundcloud)](https://soundcloud.com/lesterrry)
@@ -62,6 +62,8 @@ Setting keys:
 | Appearance | 1 - House in the Woods, 2 - Hi-Fi Black, 3 - Lost in Belize, 4 – Snow-white marble, 5 – Japanese High-End, 6 – Soviet Wooden, 7 – Space Dog |
 | Quick Boot | 0 - off, 1 - on |
 | Sleep Timer | 0 – off, 1 = 10 mins, 9 = 90 mins |
-| Auto DeepWave | 0 - off, 1 – few DW tracks, <...>, 4 – lots of DW tracks |
+| Server | 1 - Silverwing (faster), 2 - Sprint (more reliable) |
 | Verbose | 0 - few terminal output, 1 – rich terminal output |
 | Narrator | 0 - off, 1 – on |
+| DeepWave chance | 0 - off, 1 – DW tracks are rare, <...>, 4 – DW tracks come up often |
+| DeepWave count | [Equivalent to number of DW tracks to add during playback] |
