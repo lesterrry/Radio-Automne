@@ -15,7 +15,16 @@ Radio Automne is an internet-radio client, wrapped in beautiful user interface. 
 - DeepWave: smart track lookup add-on, providing ultimate tailor-made playback experience
 - Narrator: voice synthesis feature, which will talk to you 
 - Sleep timer: when time's up, player will pause and your Mac will enter sleep mode
-- Multiple appearances 
+- Multiple appearances
+## Frequencies
+#### 🌌 Raining in Osaka
+Beautiful mix of LoFi and Jazzhop, such a perfect way to chill
+#### 🏝 Fourteenth Beach
+Beats, delivered from all the coolest beaches around the globe. Ultimate summer experience.
+#### 🏔 Snowfall in Kirovsk Mountains
+Curated classical tracks for all sorts of melancholy
+#### 🌫 Saint Petersburg Stories
+Russian. Punk. Rock.
 ## Installation
 1. Download the [latest release](https://github.com/Lesterrry/Radio-Automne/releases/latest).
 2. Move the app to the Applications directory on your Mac.
