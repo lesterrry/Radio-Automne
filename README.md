@@ -1,9 +1,5 @@
-#  Le Radio Automne
+# 📻 🍂 Le Radio Automne
 World wide web audio receiving machine
-
-(List of available frequencies)[https://github.com/Lesterrry/Radio-Automne/tree/main/Frequencies]
-
-See also: [Juno](https://github.com/lesterrry/juno) – a CD player which looks like a CD player
 
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
 [![Release](https://img.shields.io/badge/latest%20release-v1.1.2%20Samoyed-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
@@ -11,6 +7,11 @@ See also: [Juno](https://github.com/lesterrry/juno) – a CD player which looks 
 
 [![SoundCloud](https://img.shields.io/badge/SoundCloud-listen-9cf?style=social&logo=soundcloud)](https://soundcloud.com/lesterrry)
 ![Screenshot](https://github.com/Lesterrry/Radio-Automne/raw/main/screeens/Main.gif)
+
+📡 [List of available frequencies](https://github.com/Lesterrry/Radio-Automne/tree/main/Frequencies)
+
+💿 See also: [Juno](https://github.com/lesterrry/juno) – a CD player which looks like a CD player
+
 ## What is it?
 Radio Automne is an internet-radio client, wrapped in beautiful user interface. It provides such features, as:
 - Automatic frequency range fetching, configuring and setting up
