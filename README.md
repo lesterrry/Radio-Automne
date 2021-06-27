@@ -1,6 +1,8 @@
 #  Le Radio Automne
 World wide web audio receiving machine
 
+See also: [Juno](https://github.com/lesterrry/juno) – a CD player which looks like a CD player
+
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
 [![Release](https://img.shields.io/badge/latest%20release-v1.1.2%20Samoyed-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
