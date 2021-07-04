@@ -13,12 +13,13 @@ World wide web audio receiving machine
 💿 See also: [Juno](https://github.com/lesterrry/juno) – a CD player which looks like a CD player
 
 ## What is it?
-Radio Automne is an internet-radio client, wrapped in beautiful user interface. It provides such features, as:
-- Automatic frequency range fetching, configuring and setting up
-- DeepWave: smart track lookup add-on, providing ultimate tailor-made playback experience
-- Narrator: voice synthesis feature, which will talk to you 
-- Sleep timer: when time's up, player will pause and your Mac will enter sleep mode
+Radio Automne is an internet-radio client, wrapped in beautiful user interface. It has:
+- Multiple built-in frequencies which suit every mood
+- *DeepWave*, automatic service, which finds almost infinite number of related tracks
+- *Narrator*, voice synthesis feature, which will talk to you throughout the playback
+- Sleep timer: when time's up, radio will pause and your Mac will enter sleep mode
 - Multiple appearances
+- 100% free access
 ## Installation
 1. Download the [latest release](https://github.com/Lesterrry/Radio-Automne/releases/latest).
 2. Move the app to the Applications directory on your Mac.
@@ -26,25 +27,34 @@ Radio Automne is an internet-radio client, wrapped in beautiful user interface. 
 4. Confirm opening.
 ## User manual
 ### 1. Applying power
-Power is applied by pressing the ON/STANDBY button. Machine immediately starts booting. If booted successfully, machine will wait for you to choose a frequency.
-### 2. Managing frequencies
-Frequencies are controlled using ‘Frequency Control’ module. Main Display always shows selected frequency’s name. Try pressing Up and Down buttons, this will guide you through retrieved frequencies. To understand tuned frequency, pay attention to the Tune indicator: if module is successfully tuned, indicator turns green. If module is currently performing frequency tuning, the same indicator turns red. If indicator is off, selected frequency is not being used. To tune in to such frequency, press Set button when selected.
->Note: The New indicator switches on in case selected frequency has been added to the registry recently.
+Press `ON/STANDBY` button and wait for the radio to boot.
+### 2. Tuning
+Frequencies are controlled using 'Frequency Control' module. Main Display always shows selected frequency’s name. By pressing `Up` and `Down` buttons you can seek through available frequencies. Tune indicator displays state of currently selected frequency. If selected frequency is currently being used, the indicator turns green. If indicator is off, selected frequency is not being used. To tune in to such frequency, press `Set` button.
 
->Note: The Stream indicator switches on in case selected frequency does not support track identifying, as well as other smart features. Such frequencies are basic Web streams.
-### 3. Starting playing
-Playback is controlled by Playback Controller. When successfully tuned, machine should be told to start playback by pressing Play button. If pressed while already playing, Play button tells the machine to start playing current track from the very beginning. 
-To pause playback, press Pause button.
-Switching between tracks should be performed by pressing Next and Previous button.
-Link button helps user retrieve the track origin.
-DeepWave button, if pressed, tells the machine to play similar to the current one tracks. It can be pressed many times, however some tracks may not support DeepWave.
-### 4. Understanding system status
-System status indicator is located underneath Standby button. Colourless indicator means the machine is currently off, yellow means it’s busy, green – ready or playing, and red means that the machine has encountered an error. Usually, error descriptions are shown in the Terminal.
-### 5. Personalizing the machine
-To precisely set up the machile, user should press Setup button. Thus, a Setup menu will be shown in the Terminal window. Switching between settings is done by preessing Up and Down keys, while their values are set using Right and Left ones.
->Note: sleep timer function needs your special permission if running for the first time.
+If you want to add your own frequency from SoundCloud, go to `./Music/Radio Automne` on your Mac and fill in the JSON file with as many custom frequencies as you wish.
 
->Note: in order for Narrator feature to work properly, make sure you have installed corresponding voice synthesizers. Ava Premium is recommended for English, and Milena Premium for Russian. Download them in MacOS Universal Access settings.
+`New` indicator switches on if selected frequency was recently added to the registry.
+
+`Stream` indicator switches on if selected frequency does not support track identifying, as well as other smart features. Such frequencies are basic Web streams.
+
+`Memory` indicator switches on if selected frequency is stored on your Mac.
+
+### 3. Playing
+Playback is controlled by 'Playback Controller'. To start playing, press `Play` button after you tuned in to a frequency. If you press the button while the radio is already playing, current track will start from the very beginning. 
+To pause playback, press `Pause` button.
+
+Press `Next` or `Previous` buttons to switch between tracks.
+
+Press `Link` button to find the track online.
+
+Press `DeepWave` button to start playing similar tracks to the current one.
+
+### 4. Personalizing the machine
+To precisely set up the machile, press `Setup` button. Setup menu will be shown in the Terminal window. Use `Up` & `Down` arrow keys on your keyboard to switch between settings, and `Left` & `Right` to change their values.
+
+>**NB:** Sleep timer function needs your special permission if running for the first time.
+
+>**NB:** in order for *Narrator* feature to work properly, make sure you have installed corresponding voice synthesizers. `Ava Premium` is recommended for English, and `Milena Premium` for Russian. Download them in MacOS Universal Access settings.
 
 Keyboard operation:
 
@@ -68,7 +78,7 @@ Setting keys:
 | Quick Boot | 0 - off, 1 - on |
 | Sleep Timer | 0 – off, 1 = 10 mins, 9 = 90 mins |
 | Server | 1 - Silverwing (faster), 2 - Sprint (more reliable) |
-| Verbose | 0 - few terminal output, 1 – rich terminal output |
+| Verbose | 0 - few terminal output, 1 – lots of terminal output |
 | Narrator | 0 - off, 1 – on |
 | DeepWave chance | 0 - off, 1 – DW tracks are rare, <...>, 4 – DW tracks come up often |
 | DeepWave count | [Equivalent to number of DW tracks to add during playback] |
