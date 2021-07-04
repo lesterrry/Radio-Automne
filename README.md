@@ -5,7 +5,6 @@ World wide web audio receiving machine
 [![Release](https://img.shields.io/badge/latest%20release-v1.1.2%20Samoyed-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-[![SoundCloud](https://img.shields.io/badge/SoundCloud-listen-9cf?style=social&logo=soundcloud)](https://soundcloud.com/lesterrry)
 ![Screenshot](https://github.com/Lesterrry/Radio-Automne/raw/main/screeens/Main.gif)
 
 📡 [List of available frequencies](https://github.com/Lesterrry/Radio-Automne/tree/main/Frequencies)
