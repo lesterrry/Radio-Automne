@@ -1,6 +1,9 @@
 # Frequencies registry
+#### *NEW!* ⛲️ Streets of Paris
+Jazzhip for every sort of mood
+> ID: 1281957889
 #### 🌌 Raining in Osaka
-Beautiful mix of LoFi and Jazzhop, such a perfect way to chill
+Beautiful mix of LoFi, such a perfect way to chill
 > ID: 995254591
 #### 🏝 Fourteenth Beach
 Beats, delivered from all the coolest beaches around the globe. Ultimate summer experience
