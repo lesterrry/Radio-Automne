@@ -7,7 +7,7 @@ World wide web audio receiving machine
 
 ![Screenshot](https://github.com/Lesterrry/Radio-Automne/raw/main/screeens/Main.gif)
 
-📡 [List of available frequencies](https://github.com/Lesterrry/Radio-Automne/tree/main/Frequencies)
+‼️ **NEW ARRIVALS >>>** 📡 [List of available frequencies](https://github.com/Lesterrry/Radio-Automne/tree/main/Frequencies)
 
 💿 See also: [Juno](https://github.com/lesterrry/juno) – a CD player which looks like a CD player
 
