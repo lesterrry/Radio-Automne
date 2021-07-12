@@ -2,7 +2,7 @@
 World wide web audio receiving machine
 
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
-[![Release](https://img.shields.io/badge/latest%20release-v1.1.2%20Samoyed-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
+[![Release](https://img.shields.io/badge/latest%20release-v1.1.3%20Samoyed-lightgrey)](https://github.com/Lesterrry/Radio-Automne/releases/latest)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ![Screenshot](https://github.com/Lesterrry/Radio-Automne/raw/main/screeens/Main.gif)
@@ -30,7 +30,11 @@ Press `ON/STANDBY` button and wait for the radio to boot.
 ### 2. Tuning
 Frequencies are controlled using 'Frequency Control' module. Main Display always shows selected frequency’s name. By pressing `Up` and `Down` buttons you can seek through available frequencies. Tune indicator displays state of currently selected frequency. If selected frequency is currently being used, the indicator turns green. If indicator is off, selected frequency is not being used. To tune in to such frequency, press `Set` button.
 
+If you want to tune in a frequency using its ID, go to the first frequency in 'Frequency Controller', type the ID and press `Set` button.
+
 If you want to add your own frequency from SoundCloud, go to `./Music/Radio Automne` on your Mac and fill in the JSON file with as many custom frequencies as you wish.
+
+>**NB:** Playlist ID is a specific number which you can obtain by going to `Share -> Embed` on your playlist's page and looking through the link. ID will show up as `api.soundcloud.com/playlists/<ID>`
 
 `New` indicator switches on if selected frequency was recently added to the registry.
 
