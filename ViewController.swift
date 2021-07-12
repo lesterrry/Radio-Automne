@@ -208,6 +208,7 @@ class ViewController: NSViewController{
     static var selectedFrequency: Frequency? = nil
     static var selectedFrequencyIndex = -1
     static var setFrequencyIndex = -1
+    static var demandFrequencyID = ""
     static var setFrequency: Frequency? = nil
     static var retrievedFrequencies: [Frequency] = []
     static var ticker: Timer!
@@ -240,6 +241,7 @@ class ViewController: NSViewController{
     static let states = [MainDisplayState.frequency, MainDisplayState.song, MainDisplayState.artist, MainDisplayState.time]
     static let streamStates = [MainDisplayState.frequency, MainDisplayState.song, MainDisplayState.time]
     static let fm = FileManager.default
+    static let freqDemandPlaceholder = "ID: >"
     
     //*********************************************************************
     //FUNCTIONS
@@ -492,9 +494,45 @@ class ViewController: NSViewController{
                 self.retrieveTracks(frequency: fr)
             }
         }
-//        else {
-//            print(event.keyCode)
-//        }
+        else {
+            guard ViewController.selectedFrequencyIndex == 0 else { return }
+            var k: Int? = nil
+            switch event.keyCode {
+            case 18...21:
+                k = Int(event.keyCode - 17)
+            case 19:
+                k = 2
+            case 20:
+                k = 3
+            case 21:
+                k = 4
+            case 23:
+                k = 5
+            case 22:
+                k = 6
+            case 26:
+                k = 7
+            case 28:
+                k = 8
+            case 25:
+                k = 9
+            case 29:
+                k = 0
+            case 51:
+                k = 51
+//            case let k:
+//                print(k)
+            default: ()
+            }
+            if let key = k {
+                if key == 51 {
+                    ViewController.demandFrequencyID = String(ViewController.demandFrequencyID.dropLast())
+                } else {
+                    ViewController.demandFrequencyID += String(key)
+                }
+                setFreqLabel(to: "ID: >\(ViewController.demandFrequencyID)")
+            }
+        }
     }
     func sendToGithub() {
         NSWorkspace.shared.open(URL(string: "https://github.com/Lesterrry/Radio-Automne")!)
@@ -894,7 +932,7 @@ class ViewController: NSViewController{
             } else {
                 ViewController.player.play()
                 if ViewController.defaults.integer(forKey: "log") == 1 {
-                    tprint("WARN: (synth) \(a.1 ?? "nil")")
+                    tprint("WARN4: (synth) \(a.1 ?? "nil")")
                 }
             }
         } else {
@@ -989,11 +1027,15 @@ class ViewController: NSViewController{
     }
     
     func retrieveFrequencies() {
+        ViewController.retrievedFrequencies = [Frequency(name: ViewController.freqDemandPlaceholder, reliable: nil, num: nil, isNew: nil, isStream: false, playlistID: nil, streamURL: nil, streamDescription: nil)]
         let log = (ViewController.defaults.integer(forKey: "log") == 1) ? true : false
         var custom: CustomFrequencies? = nil
         if let a = ViewController.configFilePath {
             custom = try? JSONDecoder().decode(CustomFrequencies.self, from: FileHandle(forReadingFrom: a).readDataToEndOfFile()).reliable()
-            if log, let c = custom, let cf = c.frequencies, cf.count > 0 { tprint("From memory: \(cf.count)") }
+            if log, let c = custom, let cf = c.frequencies, cf.count > 0 {
+                tprint("From memory: \(cf.count)")
+                ViewController.retrievedFrequencies.append(contentsOf: cf)
+            }
         }
         SFX.playSFX(sfx: SFX.Effects.radioSetup)
         tprint(log ? "Connecting via \((ViewController.defaults.integer(forKey: "server") == 1) ? "Silverwing" : "Sprint")" : "Please wait...")
@@ -1012,17 +1054,16 @@ class ViewController: NSViewController{
                     let decoder = JSONDecoder()
                     let obj = try decoder.decode(FirstResponderAnswer.self, from: response.data!)
                     AutomneKeys.scKey = obj.scKey!
-                    ViewController.retrievedFrequencies = obj.frequencies!
+                    ViewController.retrievedFrequencies.append(contentsOf: obj.frequencies!)
                     let task = {
-                        self.switchFrequency(to: ViewController.retrievedFrequencies[0], index: 0)
+                        self.switchFrequency(to: ViewController.retrievedFrequencies[1], index: 1)
                         if log { self.tprint("Retrieved " + String(ViewController.retrievedFrequencies.count) + " frequencies") }
-                        if let c = custom, let cf = c.frequencies { ViewController.retrievedFrequencies.append(contentsOf: cf) }
                         self.tprint(obj.narratives![0], raw: true)
                         self.TBLabel.stringValue = obj.narratives![0]
                         AutomneAxioms.messages.append(contentsOf: obj.narratives ?? [])
                         self.tprint("Ready")
                         if obj.version != self.appVersion && !(self.appVersion?.contains("beta"))!{
-                            self.tprint("ATTENTION: Latest version v\(obj.version ?? "?") is available at automne.aydar.media/release")
+                            self.tprint("Update to v\(obj.version ?? "?") at automne.aydar.media/release")
                         }
                         self.setSystemStatus(to: .unset)
                         SFX.shutUp()
@@ -1040,19 +1081,29 @@ class ViewController: NSViewController{
                         task()
                     }
                 }
-                catch{
-                    self.tprint("ERROR4: " + error.localizedDescription)
-                    self.tprint("Please check for updates at automne.aydar.media/release")
-                    self.setSystemStatus(to: AutomneProperties.SystemStatus.error)
-                    SFX.shutUp()
+                catch {
+                    self.serveOfflineMode()
                 }
                 
-            case .failure(let error):
-                self.tprint("ERROR3: " + error.localizedDescription)
-                self.setSystemStatus(to: AutomneProperties.SystemStatus.error)
-                SFX.shutUp()
+            case .failure( _):
+                self.serveOfflineMode()
             }
         }
+    }
+    
+    func serveOfflineMode() {
+        self.switchFrequency(to: ViewController.retrievedFrequencies[0], index: 0)
+        self.tprint("WARN5: First responder failure. Try updating or switching server.")
+        self.TBLabel.stringValue = "No FR mode"
+        self.setSystemStatus(to: .unset)
+        SFX.shutUp()
+    }
+    
+    func serveNoFreq(_ with: Frequency) {
+        self.tprint("This frequency does not exist")
+        self.setSystemStatus(to: .unset)
+        self.setFreqLight(to: .unknown, new: with.isNew ?? false, memory: with.reliable ?? false)
+        SFX.shutUp()
     }
     
     func startStream(frequency: Frequency) {
@@ -1069,6 +1120,8 @@ class ViewController: NSViewController{
     }
     
     func retrieveTracks(frequency: Frequency){
+        let playlistID = frequency.name == ViewController.freqDemandPlaceholder ? ViewController.demandFrequencyID : frequency.playlistID!
+        guard playlistID != "" else { return }
         removeImage()
         let log = (ViewController.defaults.integer(forKey: "log") == 1) ? true : false
         ViewController.sleepTimer?.invalidate()
@@ -1078,10 +1131,11 @@ class ViewController: NSViewController{
         setSystemStatus(to: AutomneProperties.SystemStatus.busy)
         setPlaybackControllerState(to: .none)
         if log { tprint("Retrieving audio data...") }
+        ViewController.demandFrequencyID = ""
         let url = URL(
             string: AutomneAxioms.SCNoseQueue
                 + AutomneAxioms.SCPlaylistQueue
-                + frequency.playlistID!
+                + playlistID
                 + AutomneAxioms.SCTailQueue
                 + AutomneKeys.scKey
             )!
@@ -1089,9 +1143,13 @@ class ViewController: NSViewController{
         AF.request(url).response { response in
             switch response.result {
             case .success( _):
-                do{
+                do {
                     let decoder = JSONDecoder()
-                    let obj = try decoder.decode(Playlist.self, from: response.data!)
+                    guard let data = response.data else {
+                        self.serveNoFreq(frequency)
+                        return
+                    }
+                    let obj = try decoder.decode(Playlist.self, from: data)
                     let task = {
                         if obj.tracks != nil{
                             self.fillQueue(with: obj.tracks!, shuffle: true)
@@ -1100,13 +1158,14 @@ class ViewController: NSViewController{
                             self.setSystemStatus(to: AutomneProperties.SystemStatus.ready)
                             self.setPlaybackLabel(to: "Ready")
                             SFX.shutUp()
+                            if frequency.name == ViewController.freqDemandPlaceholder {
+                                self.setFreqLabel(to: obj.title ?? "Unknown")
+                            }
                             self.setFreqLight(to: .tuned, new: frequency.isNew ?? false, memory: frequency.reliable ?? false)
                             ViewController.setFrequencyIndex = ViewController.selectedFrequencyIndex
                             ViewController.setFrequency = frequency
                         } else {
-                            self.tprint("ERROR10: No tracks/broken frequency")
-                            self.setSystemStatus(to: AutomneProperties.SystemStatus.error)
-                            SFX.shutUp()
+                            self.serveNoFreq(frequency)
                         }
                     }
                     if ViewController.defaults.integer(forKey: "qboot") == 0{
@@ -1147,8 +1206,9 @@ class ViewController: NSViewController{
     func switchFrequency(to: Frequency, index: Int){
         ViewController.selectedFrequency = to
         ViewController.selectedFrequencyIndex = index
+        ViewController.demandFrequencyID = ""
         frequencyControllerLabel.stringValue = to.name
-        setFreqLight(to: index == ViewController.setFrequencyIndex ? .tuned : .unknown, new: to.isNew ?? false, stream: to.isStream ?? false, memory: to.reliable ?? false)
+        setFreqLight(to: (to.name != ViewController.freqDemandPlaceholder && index == ViewController.setFrequencyIndex) ? .tuned : .unknown, new: to.isNew ?? false, stream: to.isStream ?? false, memory: to.reliable ?? false)
     }
     func setFreqLabel(to: String){
         frequencyControllerLabel.stringValue = to
@@ -1193,7 +1253,8 @@ class ViewController: NSViewController{
             case .artist:
                 setPlaybackLabel(to: "By " + (ViewController.currentTrack!.user?.username ?? "unknown artist"))
             case .frequency:
-                setPlaybackLabel(to: isStream ? (ViewController.setFrequency?.name)! : (ViewController.setFrequencyIndex == -1 ? ("From: " + (ViewController.deepWaveInitiator?.title ?? "unknown")) : (ViewController.setFrequency!.name)))
+                let label = ViewController.setFrequencyIndex == 0 ? "On demand" : (isStream ? (ViewController.setFrequency?.name)! : (ViewController.setFrequencyIndex == -1 ? ("From: " + (ViewController.deepWaveInitiator?.title ?? "unknown")) : (ViewController.setFrequency!.name)))
+                setPlaybackLabel(to: label)
             default: ()
             }
         }
