@@ -354,8 +354,10 @@ class ViewController: NSViewController{
         if ViewController.defaults.integer(forKey: "appearance") == 0 {
             ViewController.defaults.set(1, forKey: "appearance")
             ViewController.defaults.set(1, forKey: "deepwave_count")
-            ViewController.defaults.set(1, forKey: "server")
             ViewController.defaults.set(2, forKey: "artwork")
+        }
+        if ViewController.defaults.integer(forKey: "server") == 0 {
+            ViewController.defaults.set(1, forKey: "server")
         }
     }
     
