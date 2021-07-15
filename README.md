@@ -19,12 +19,15 @@ Radio Automne is an internet-radio client, wrapped in beautiful user interface. 
 - Sleep timer: when time's up, radio will pause and your Mac will enter sleep mode
 - Multiple appearances
 - 100% free access
+
 ## Installation
 1. Download the [latest release](https://github.com/Lesterrry/Radio-Automne/releases/latest).
 2. Move the app to the Applications directory on your Mac.
 3. Right-click the app icon, select "Open".
 4. Confirm opening.
+
 ## User manual
+
 ### 1. Applying power
 Press `ON/STANDBY` button and wait for the radio to boot.
 ### 2. Tuning
