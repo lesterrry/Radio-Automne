@@ -1034,10 +1034,12 @@ class ViewController: NSViewController{
         var custom: CustomFrequencies? = nil
         if let a = ViewController.configFilePath {
             custom = try? JSONDecoder().decode(CustomFrequencies.self, from: FileHandle(forReadingFrom: a).readDataToEndOfFile()).reliable()
-            if log, let c = custom, let cf = c.frequencies, cf.count > 0 {
-                tprint("From memory: \(cf.count)")
+            if let c = custom, let cf = c.frequencies, cf.count > 0 {
+                if log { tprint("From memory: \(cf.count)") }
                 ViewController.retrievedFrequencies.append(contentsOf: cf)
             }
+        } else {
+            tprint("WARN6: Memory error")
         }
         SFX.playSFX(sfx: SFX.Effects.radioSetup)
         tprint(log ? "Connecting via \((ViewController.defaults.integer(forKey: "server") == 1) ? "Silverwing" : "Sprint")" : "Please wait...")
