@@ -23,7 +23,6 @@ struct User : Codable {
 	let avatar_url : String?
 
 	enum CodingKeys: String, CodingKey {
-
 		case permalink_url = "permalink_url"
 		case permalink = "permalink"
 		case username = "username"
@@ -45,5 +44,4 @@ struct User : Codable {
 		kind = try values.decodeIfPresent(String.self, forKey: .kind)
 		avatar_url = try values.decodeIfPresent(String.self, forKey: .avatar_url)
 	}
-
 }

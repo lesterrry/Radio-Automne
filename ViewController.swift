@@ -203,7 +203,7 @@ class ViewController: NSViewController{
     //*********************************************************************
     static var player : AVPlayer = AVPlayer()
     static var smenu = SetupMenu(elements: [], selected: 0)
-    static var playableQueue: [Tracks] = []
+    static var playableQueue: [Track] = []
     static var playbackIndex = 0
     static var selectedFrequency: Frequency? = nil
     static var selectedFrequencyIndex = -1
@@ -226,8 +226,8 @@ class ViewController: NSViewController{
     static var playlist: Playlist? = nil
     static var TSBP = 0
     static var terminalCache = ""
-    static var currentTrack: Tracks? = nil
-    static var deepWaveInitiator: Tracks? = nil
+    static var currentTrack: Track? = nil
+    static var deepWaveInitiator: Track? = nil
     static var configFilePath: URL? = nil
     
     //*********************************************************************
@@ -862,8 +862,8 @@ class ViewController: NSViewController{
     func play(from: Int = 0, init: Bool = false) {
         var url: URL
         let isStream = (ViewController.setFrequency?.isStream) ?? false
-        let track: Tracks?
-        if isStream{
+        let track: Track?
+        if isStream {
             track = nil
             url = URL(string: (ViewController.setFrequency?.streamURL!)!)!
             setSystemStatus(to: .active)
@@ -885,7 +885,7 @@ class ViewController: NSViewController{
         } else {
             track = ViewController.playableQueue[from]
             ViewController.currentTrack = track
-            if `init`{
+            if `init` {
                 tclear()
                 tprint("", raw: true)
                 tprint("", raw: true)
@@ -900,8 +900,62 @@ class ViewController: NSViewController{
             }
             setPlaybackControllerState(to: .loading)
             ViewController.playbackIndex = from
-            url = URL(string: track!.stream_url! + AutomneAxioms.SCTailQueue + AutomneKeys.scKey)!
-            ViewController.player = AVPlayer(url: url)
+            let url = URL(string: track!.media!.transcodings![0].url!
+                + AutomneAxioms.SCTailQueue[0]
+                + AutomneKeys.scKey)!
+            AF.request(url).response { response in
+                let decoder = JSONDecoder()
+                switch response.result {
+                    case .success( _):
+                        guard let data = response.data else {
+                            self.tprint("ERROR122: No data from url callback")
+                            self.setSystemStatus(to: AutomneProperties.SystemStatus.error)
+                            SFX.shutUp()
+                            return
+                        }
+                        let obj = try! decoder.decode(TrackStreamURLCallback.self, from: data)
+                        let playerItem = AVPlayerItem.init(url: URL(string: obj.url!)!)
+                        NotificationCenter.default.addObserver(self, selector: #selector(self.playerDidFinishPlaying(sender:)),
+                                                               name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
+                                                               object: playerItem)
+                        ViewController.player = AVPlayer.init(playerItem: playerItem)
+                        ViewController.player.volume = 1.0
+                        
+                        if ViewController.defaults.integer(forKey: "narrator") == 1 && !isStream {
+                            let a = SFX.composeAndSpeak(track: (track!.title ?? "unknown"), artist: (track!.user?.username) ?? "unknown")
+                            if a.0 {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 4.0, execute: { ViewController.player.play() })
+                            } else {
+                                ViewController.player.play()
+                                if ViewController.defaults.integer(forKey: "log") == 1 {
+                                    self.tprint("WARN4: (synth) \(a.1 ?? "nil")")
+                                }
+                            }
+                        } else {
+                            ViewController.player.play()
+                        }
+                        
+                        let b = ViewController.defaults.integer(forKey: "deepwave_chance")
+                        if b != 0 && !isStream && !(track!.deepWave ?? false) {
+                            let c = Int.random(in: 0...(10 - (b * 2)))
+                            if c == 0 || c == 1 {
+                                self.initDeepwave(with: track!, count: ViewController.defaults.integer(forKey: "deepwave_count"), add: true)
+                            }
+                        }
+                        ViewController.mainDisplayState = .frequency
+                        self.setPlaybackControllerState(to: .playing)
+                        if ViewController.player.error != nil {
+                            self.setSystemStatus(to: .error)
+                            self.setPlaybackControllerState(to: .error)
+                            self.tprint("ERROR7: " + ViewController.player.error!.localizedDescription)
+                        }
+                    case .failure(let error):
+                        self.tprint("ERROR1: " + error.localizedDescription)
+                        self.setSystemStatus(to: AutomneProperties.SystemStatus.error)
+                        SFX.shutUp()
+                }
+                
+            }
             self.setSystemStatus(to: .active)
             self.playbackControllerLight_deepwave.isHidden = !track!.deepWave!
             DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: {
@@ -920,41 +974,7 @@ class ViewController: NSViewController{
             ]
             ViewController.controlCenterInfo.nowPlayingInfo!["artwork"] = a ?? .none
         }
-        let playerItem = AVPlayerItem.init(url: url)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.playerDidFinishPlaying(sender:)),
-                                               name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
-                                               object: playerItem)
-        ViewController.player = AVPlayer.init(playerItem: playerItem)
-        ViewController.player.volume = 1.0
         
-        if ViewController.defaults.integer(forKey: "narrator") == 1 && !isStream {
-            let a = SFX.composeAndSpeak(track: (track!.title ?? "unknown"), artist: (track!.user?.username) ?? "unknown")
-            if a.0 {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 4.0, execute: { ViewController.player.play() })
-            } else {
-                ViewController.player.play()
-                if ViewController.defaults.integer(forKey: "log") == 1 {
-                    tprint("WARN4: (synth) \(a.1 ?? "nil")")
-                }
-            }
-        } else {
-            ViewController.player.play()
-        }
-        
-        let b = ViewController.defaults.integer(forKey: "deepwave_chance")
-        if b != 0 && !isStream && !(track!.deepWave ?? false) {
-            let c = Int.random(in: 0...(10 - (b * 2)))
-            if c == 0 || c == 1 {
-                initDeepwave(with: track!, count: ViewController.defaults.integer(forKey: "deepwave_count"), add: true)
-            }
-        }
-        ViewController.mainDisplayState = .frequency
-        setPlaybackControllerState(to: .playing)
-        if ViewController.player.error != nil{
-            setSystemStatus(to: .error)
-            setPlaybackControllerState(to: .error)
-            tprint("ERROR7: " + ViewController.player.error!.localizedDescription)
-        }
     }
     
     func pause(){
@@ -979,9 +999,9 @@ class ViewController: NSViewController{
     }
     
     ///API
-    func initDeepwave(with: Tracks, count: Int = -1, add: Bool = false) {
+    func initDeepwave(with: Track, count: Int = -1, add: Bool = false) {
         let url = URL(
-            string: with.uri! + AutomneAxioms.SCDeepWaveQueue + AutomneAxioms.SCTailQueue + AutomneKeys.scKey
+            string: with.uri! + AutomneAxioms.SCDeepWaveQueue + AutomneAxioms.SCTailQueue[0] + AutomneKeys.scKey
             )!
         AF.request(url).response { response in
             switch response.result {
@@ -989,7 +1009,7 @@ class ViewController: NSViewController{
                 do{
                     let decoder = JSONDecoder()
                     
-                    guard var obj = try? decoder.decode([Tracks].self, from: response.data!) else {
+                    guard var obj = try? decoder.decode([Track].self, from: response.data!) else {
                         throw NSError()
                     }
                     for i in 0..<obj.count{
@@ -997,7 +1017,7 @@ class ViewController: NSViewController{
                     }
                     obj = AutomneAxioms.uniq(source: obj, from: ViewController.playableQueue)
                     if add {
-                        let o: [Tracks]
+                        let o: [Track]
                         if obj.count > count {
                             o = Array(obj.shuffled()[0...count - 1])
                         } else {
@@ -1140,7 +1160,7 @@ class ViewController: NSViewController{
             string: AutomneAxioms.SCNoseQueue
                 + AutomneAxioms.SCPlaylistQueue
                 + playlistID
-                + AutomneAxioms.SCTailQueue
+                + AutomneAxioms.SCTailQueue[0]
                 + AutomneKeys.scKey
             )!
         
@@ -1155,19 +1175,60 @@ class ViewController: NSViewController{
                     }
                     let obj = try decoder.decode(Playlist.self, from: data)
                     let task = {
-                        if obj.tracks != nil{
-                            self.fillQueue(with: obj.tracks!, shuffle: true)
-                            //MARK: Это костыль, переписать playable queue
-                            ViewController.playlist = obj
-                            self.setSystemStatus(to: AutomneProperties.SystemStatus.ready)
-                            self.setPlaybackLabel(to: "Ready")
-                            SFX.shutUp()
-                            if frequency.name == ViewController.freqDemandPlaceholder {
-                                self.setFreqLabel(to: obj.title ?? "Unknown")
+                        if obj.tracks != nil {
+                            var ids = [""]
+                            var index = 0
+                            for i in 0...obj.tracks!.count - 1 {
+                                ids[index].append(String(obj.tracks![i].id!) + ",")
+                                if i % 50 == 0 {
+                                    ids.append("")
+                                    index += 1
+                                }
                             }
-                            self.setFreqLight(to: .tuned, new: frequency.isNew ?? false, memory: frequency.reliable ?? false)
-                            ViewController.setFrequencyIndex = ViewController.selectedFrequencyIndex
-                            ViewController.setFrequency = frequency
+                            let semaphore = DispatchSemaphore(value: 1)
+                            var tracks: [Track] = []
+                            DispatchQueue.global(qos: .userInitiated).async {
+                                for i in 0...ids.count - 1 {
+                                    let trurl = URL(
+                                    string: AutomneAxioms.SCNoseQueue
+                                        + AutomneAxioms.SCTracksQueue
+                                        + ids[i]
+                                        + AutomneAxioms.SCTailQueue[1]
+                                        + AutomneKeys.scKey
+                                    )!
+                                    AF.request(trurl).response { trresponse in
+                                        switch trresponse.result {
+                                            case .success( _):
+                                                guard let trdata = trresponse.data else {
+                                                    self.serveNoFreq(frequency)
+                                                    return
+                                                }
+                                                let trobj = try! decoder.decode([Track].self, from: trdata)
+                                                tracks.append(contentsOf: trobj)
+                                            case .failure(let error):
+                                                self.tprint("ERROR1: " + error.localizedDescription)
+                                                self.setSystemStatus(to: AutomneProperties.SystemStatus.error)
+                                                SFX.shutUp()
+                                        }
+                                        semaphore.signal()
+                                    }
+                                    semaphore.wait()
+                                }
+                                DispatchQueue.main.async {
+                                    self.fillQueue(with: tracks, shuffle: true)
+                                    //MARK: Это костыль, переписать playable queue
+                                    ViewController.playlist = obj
+                                    self.setSystemStatus(to: AutomneProperties.SystemStatus.ready)
+                                    self.setPlaybackLabel(to: "Ready")
+                                    SFX.shutUp()
+                                    if frequency.name == ViewController.freqDemandPlaceholder {
+                                        self.setFreqLabel(to: obj.title ?? "Unknown")
+                                    }
+                                    self.setFreqLight(to: .tuned, new: frequency.isNew ?? false, memory: frequency.reliable ?? false)
+                                    ViewController.setFrequencyIndex = ViewController.selectedFrequencyIndex
+                                    ViewController.setFrequency = frequency
+                                }
+                            }
                         } else {
                             self.serveNoFreq(frequency)
                         }
@@ -1180,7 +1241,7 @@ class ViewController: NSViewController{
                         task()
                     }
                 }
-                catch{
+                catch {
                     self.tprint("ERROR2: " + error.localizedDescription)
                     self.setSystemStatus(to: AutomneProperties.SystemStatus.error)
                     SFX.shutUp()
@@ -1195,7 +1256,7 @@ class ViewController: NSViewController{
     }
     
     ///Playback queue
-    func fillQueue(with: [Tracks], append: Bool = false, insert: Int = -1, shuffle: Bool = true){
+    func fillQueue(with: [Track], append: Bool = false, insert: Int = -1, shuffle: Bool = true){
         if append {
             ViewController.playableQueue.append(contentsOf: with)
         } else if insert != -1 {
