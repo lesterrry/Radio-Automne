@@ -13,6 +13,10 @@ For support, please feel free to contact me at https://www.linkedin.com/in/syeda
 
 import Foundation
 
+struct TrackDeepWaveCallback : Codable {
+    let collection: [Track]
+}
+
 struct TrackStreamURLCallback : Codable {
     let url : String?
 }

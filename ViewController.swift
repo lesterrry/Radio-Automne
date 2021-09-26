@@ -882,6 +882,14 @@ class ViewController: NSViewController{
                 "title": (ViewController.setFrequency?.name) ?? "Unknown",
                 MPNowPlayingInfoPropertyIsLiveStream: 1.0
             ]
+            let playerItem = AVPlayerItem.init(url: url)
+            NotificationCenter.default.addObserver(self, selector: #selector(self.playerDidFinishPlaying(sender:)),
+                                                   name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
+                                                   object: playerItem)
+            ViewController.player = AVPlayer.init(playerItem: playerItem)
+            ViewController.player.volume = 1.0
+            ViewController.player.play()
+            setPlaybackControllerState(to: .playing, isStream: true)
         } else {
             track = ViewController.playableQueue[from]
             ViewController.currentTrack = track
@@ -1001,17 +1009,18 @@ class ViewController: NSViewController{
     ///API
     func initDeepwave(with: Track, count: Int = -1, add: Bool = false) {
         let url = URL(
-            string: with.uri! + AutomneAxioms.SCDeepWaveQueue + AutomneAxioms.SCTailQueue[0] + AutomneKeys.scKey
-            )!
+            string: with.uri!.replacingOccurrences(of: "api", with: "api-v2") + AutomneAxioms.SCDeepWaveQueue + AutomneAxioms.SCTailQueue[0] + AutomneKeys.scKey
+            )! // I don't like replacing but uuuuh
+        print(url)
         AF.request(url).response { response in
             switch response.result {
             case .success( _):
-                do{
+                do {
                     let decoder = JSONDecoder()
-                    
-                    guard var obj = try? decoder.decode([Track].self, from: response.data!) else {
+                    guard let tracks = try? decoder.decode(TrackDeepWaveCallback.self, from: response.data!) else {
                         throw NSError()
                     }
+                    var obj = tracks.collection
                     for i in 0..<obj.count{
                         obj[i].deepWave = true
                     }
@@ -1036,7 +1045,7 @@ class ViewController: NSViewController{
                         self.play(from: 0, init: false)
                     }
                 }
-                catch{
+                catch {
                     self.tprint("WARN2: Couldn't init DeepWave")
                     SFX.shutUp()
                 }
@@ -1278,7 +1287,7 @@ class ViewController: NSViewController{
     func setFreqLabel(to: String){
         frequencyControllerLabel.stringValue = to
     }
-    func setFreqLight(to: AutomneProperties.FrequencyControllerState, new: Bool = false, stream: Bool = false, memory: Bool = false){
+    func setFreqLight(to: AutomneProperties.FrequencyControllerState, new: Bool? = nil, stream: Bool? = nil, memory: Bool? = nil){
         switch to {
         case .unknown:
             frequencyControllerLight_tune.isHidden = true
@@ -1289,9 +1298,15 @@ class ViewController: NSViewController{
             frequencyControllerLight_tune.isHidden = false
             frequencyControllerLight_tune.image = NSImage.init(named: "FreqContLight_tuned")
         }
-        frequencyControllerLight_new.isHidden = !new
-        frequencyControllerLight_stream.isHidden = !stream
-        frequencyControllerLight_memory.isHidden = !memory
+        if let n = new {
+            frequencyControllerLight_new.isHidden = !n
+        }
+        if let s = stream {
+            frequencyControllerLight_stream.isHidden = !s
+        }
+        if let m = memory {
+            frequencyControllerLight_memory.isHidden = !m
+        }
     }
     
     ///Main display
